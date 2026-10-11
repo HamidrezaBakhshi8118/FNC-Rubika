@@ -205,7 +205,7 @@ class Client:
         return ContractOtpAuthenticator(self.registry)
 
     async def _renew_transport(self):
-        terminal_info('سشن منقضی شده است؛ برای ادامه دوباره وارد شوید.')
+        terminal_info('The session has expired. Sign in again to continue.')
         session = await self._prompt_session(input_func=self._input_func, otp_input_func=self._otp_input_func)
         self._check_account(session)
         self.store.save_secret('session', session.as_dict())
@@ -269,7 +269,7 @@ class Client:
 
         session = await self._prompt_session(input_func=input_func or self._input_func, otp_input_func=otp_input_func or self._otp_input_func, authenticator=authenticator)
         await self._save_session(session)
-        terminal_success(f"سشن «{self.session_name}» با موفقیت و به‌صورت رمزگذاری‌شده ساخته شد.")
+        terminal_success(f'Encrypted session "{self.session_name}" saved successfully.')
         return session
 
     async def _prompt_session(self, *, input_func: Callable[[str], str], otp_input_func: Callable[[str], str], authenticator: OtpAuthenticator | None = None) -> Session:
@@ -284,14 +284,14 @@ class Client:
             while not _TERMINAL_LOGIN_LOCK.acquire(blocking=False):
                 await asyncio.sleep(0.05)
             acquired = True
-            terminal_info(f"ساخت سشن رمزگذاری‌شدهٔ «{self.session_name}»")
+            terminal_info(f'Creating encrypted session "{self.session_name}"')
             for attempt in range(3):
-                phone = await asyncio.to_thread(input_func, prompt_label('شماره روبیکا (09… یا +989…)'))
+                phone = await asyncio.to_thread(input_func, prompt_label('Rubika phone number (09... or +989...)'))
                 try:
                     phone = validate_iranian_phone(phone)
                     break
                 except ValueError:
-                    terminal_info('فرمت شماره معتبر نیست.')
+                    terminal_info('Invalid phone number format.')
             else:
                 raise ValueError('A valid Iranian phone number is required')
             try:
@@ -301,25 +301,25 @@ class Client:
                 if begin_with_password is None:
                     raise
                 for attempt in range(3):
-                    password = await asyncio.to_thread(otp_input_func, prompt_label('رمز دومرحله‌ای روبیکا'))
+                    password = await asyncio.to_thread(otp_input_func, prompt_label('Rubika two-step password'))
                     try:
                         challenge_id = await begin_with_password(phone, password)
                         break
                     except TwoStepRequiredError:
-                        terminal_info('رمز دومرحله‌ای پذیرفته نشد.')
+                        terminal_info('The two-step password was rejected. Try again.')
                 else:
                     raise TwoStepRequiredError('The existing two-step password was rejected')
-            terminal_info("کد تأیید ارسال شد؛ آن را بدون نمایش در ترمینال وارد کنید.")
+            terminal_info('Verification code sent. Enter it below; input is hidden.')
             for attempt in range(3):
-                code = await asyncio.to_thread(otp_input_func, prompt_label("کد تأیید"))
+                code = await asyncio.to_thread(otp_input_func, prompt_label('Verification code'))
                 code = code.translate(str.maketrans('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩', '01234567890123456789')).strip()
                 if not code:
-                    terminal_info('کد تأیید خالی است.')
+                    terminal_info('The verification code is empty.')
                     continue
                 try:
                     return await authenticator.complete(challenge_id, code)
                 except InvalidCodeError:
-                    terminal_info('کد تأیید پذیرفته نشد؛ دوباره وارد کنید.')
+                    terminal_info('The verification code was rejected. Try again.')
             raise InvalidCodeError('The verification code was rejected after three attempts')
         finally:
             try:

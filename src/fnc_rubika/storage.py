@@ -334,8 +334,11 @@ class EncryptedSQLiteStore:
                 (_timestamp() + max(0, delay_seconds), blob, _timestamp(), operation_id),
             )
 
-    def fail_operation(self, operation_id: str, *, error: str, unknown: bool = False) -> None:
-        blob = self._seal({"message": error}, aad=f"outbox:{operation_id}:error")
+    def fail_operation(self, operation_id: str, *, error: str, unknown: bool = False, error_type: str | None = None) -> None:
+        details = {"message": error}
+        if error_type is not None:
+            details['type'] = error_type
+        blob = self._seal(details, aad=f"outbox:{operation_id}:error")
         state = "unknown" if unknown else "failed"
         with self._transaction() as connection:
             connection.execute(

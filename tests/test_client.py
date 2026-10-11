@@ -4,8 +4,10 @@ import asyncio
 from pathlib import Path
 from typing import Any, Mapping
 
+import pytest
+
 from fnc_rubika import AsyncClient, EncryptedSQLiteStore, PassphraseKeyProvider, SyncClient
-from fnc_rubika.exceptions import RateLimitError, TransportError
+from fnc_rubika.exceptions import AccessDeniedError, RateLimitError, TransportError
 
 
 class FakeTransport:
@@ -56,6 +58,43 @@ def test_message_send_retries_rate_limit_and_is_durable(tmp_path):
             assert message.message_id == "m-1"
             assert len(transport.requests) == 2
 
+    asyncio.run(scenario())
+
+
+def test_access_denial_survives_outbox_and_store_reopen_without_login_or_retry(tmp_path):
+    class DeniedTransport(FakeTransport):
+        async def request(self, operation, payload, *, idempotency_key):
+            self.requests.append((operation, payload, idempotency_key))
+            raise AccessDeniedError()
+
+    async def scenario():
+        transport = DeniedTransport()
+        client = make_client(tmp_path, transport)
+
+        async def unexpected_login():
+            pytest.fail('Access denial must not request a new session')
+
+        client._reauthenticate = unexpected_login
+        try:
+            async with client:
+                queued = await client.messages.send('chat-1', 'hello', wait=False)
+                with pytest.raises(AccessDeniedError, match='destination GUID'):
+                    await client.wait_operation(queued.operation_id, timeout=2)
+                assert len(transport.requests) == 1
+                assert not client.session_expired
+                assert client.store.operation_state(queued.operation_id)['state'] == 'failed'
+        finally:
+            client.store.close()
+
+        reopened = make_client(tmp_path, FakeTransport())
+        try:
+            with pytest.raises(AccessDeniedError) as rejected:
+                await reopened.wait_operation(queued.operation_id, timeout=2)
+            assert rejected.value.status == 'ERROR_GENERIC'
+            assert rejected.value.status_det == 'INVALID_AUTH'
+        finally:
+            await reopened.aclose()
+            reopened.store.close()
     asyncio.run(scenario())
 
 

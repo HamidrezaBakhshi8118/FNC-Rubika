@@ -67,7 +67,7 @@ def test_named_client_creates_an_encrypted_session_without_user_hardcoding(tmp_p
     asyncio.run(scenario())
 
 
-def test_interactive_login_reads_phone_and_otp_without_source_values(tmp_path):
+def test_interactive_login_reads_phone_and_otp_without_source_values(tmp_path, capsys):
     async def scenario() -> None:
         registry = ContractRegistry.from_mapping({"version": "test", "base_url": "https://example.invalid", "endpoints": []})
         client = Client(
@@ -95,10 +95,17 @@ def test_interactive_login_reads_phone_and_otp_without_source_values(tmp_path):
             assert session.access_token == "session-token"
             assert client.has_session()
             assert len(prompts) == 2
+            assert all(prompt.isascii() for prompt in prompts)
         finally:
             await client.aclose()
 
     asyncio.run(scenario())
+    output = capsys.readouterr().out
+    assert output.isascii()
+    assert 'saved successfully' in output
+    assert '+989123456789' not in output
+    assert '12345' not in output
+    assert 'session-token' not in output
 
 
 def test_catalog_api_exposes_all_reviewed_operations(tmp_path):

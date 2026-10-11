@@ -14,7 +14,7 @@ import websockets
 
 from fnc_rubika.auth import default_catalog_path
 from fnc_rubika.contracts import ContractRegistry
-from fnc_rubika.exceptions import ContractError, RemoteOperationError, SessionExpiredError, TwoStepRequiredError
+from fnc_rubika.exceptions import AccessDeniedError, ContractError, RemoteOperationError, SessionExpiredError, TwoStepRequiredError
 from fnc_rubika.models import Session
 from fnc_rubika.rubika import RubikaCipher, RubikaOtpAuthenticator, RubikaTransport, transform_auth
 
@@ -92,10 +92,60 @@ def test_full_otp_v6_login_and_signed_rpc_against_independent_server():
 
 
 def test_access_denied_does_not_trigger_session_login():
-    with pytest.raises(RemoteOperationError):
-        RubikaTransport._unwrap({'status': 'ERROR_GENERIC', 'status_det': 'INVALID_AUTH'})
+    with pytest.raises(AccessDeniedError) as rejected:
+        RubikaTransport._unwrap({'status': 'ERROR_GENERIC', 'status_det': 'INVALID_AUTH', 'data': {'auth': AUTH}})
+    assert isinstance(rejected.value, RemoteOperationError)
+    assert rejected.value.status == 'ERROR_GENERIC'
+    assert rejected.value.status_det == 'INVALID_AUTH'
+    assert AUTH not in str(rejected.value)
     with pytest.raises(SessionExpiredError):
         RubikaTransport._unwrap({'status': 'ERROR_ACTION', 'status_det': 'INVALID_AUTH'})
+
+
+@pytest.mark.parametrize('version', ['5', '6'])
+def test_message_wire_payload_matches_web_client_and_keeps_rnd_on_retry(version):
+    async def scenario():
+        calls = []
+        signing_key = RSA.generate(1024) if version == '6' else None
+
+        def server(request):
+            outer = json.loads(request.content)
+            inner = RubikaCipher(AUTH).decrypt(outer['data_enc'])
+            payload = inner['input']
+            assert outer['api_version'] == version
+            assert outer['auth'] == (transform_auth(AUTH) if version == '6' else AUTH)
+            if signing_key:
+                pkcs1_15.new(signing_key.publickey()).verify(SHA256.new(outer['data_enc'].encode()), base64.b64decode(outer['sign']))
+            assert inner['method'] in {'sendMessage', 'forwardMessages'}
+            assert isinstance(payload['rnd'], str)
+            assert 1 <= int(payload['rnd']) <= 1_000_000
+            assert not any(value is None for value in payload.values())
+            calls.append(payload)
+            if inner['method'] == 'sendMessage':
+                assert payload['object_guid'] == 'chat-1'
+                assert payload['text'] == 'hello'
+                assert 'chat_id' not in payload
+                result = {'message_update': {'message': {'message_id': '1', 'text': 'hello'}}}
+            else:
+                assert payload['from_object_guid'] == 'chat-1'
+                assert payload['to_object_guid'] == 'chat-2'
+                assert payload['message_ids'] == ['1']
+                result = {'message_updates': [{'message': {'message_id': '2'}}]}
+            return httpx.Response(200, json={'data_enc': RubikaCipher(AUTH).encrypt({'status': 'OK', 'data': result})})
+
+        session = Session(AUTH, api_version=version, private_key=signing_key.export_key().decode() if signing_key else None)
+        transport = RubikaTransport(registry(), session, http_client=httpx.AsyncClient(transport=httpx.MockTransport(server)))
+        transport._dcs = {'default_api_urls': ['https://messenger.iranlms.ir/']}
+        try:
+            for _ in range(2):
+                result = await transport.request('messages.send', {'chat_id': 'chat-1', 'text': 'hello', 'reply_to_message_id': None}, idempotency_key='same-operation')
+                assert result['message']['message_id'] == '1'
+            assert calls[0]['rnd'] == calls[1]['rnd']
+            result = await transport.request('messages.forward', {'from_chat_id': 'chat-1', 'to_chat_id': 'chat-2', 'message_id': '1'}, idempotency_key='forward-operation')
+            assert result['message']['chat_id'] == 'chat-2'
+        finally:
+            await transport.aclose()
+    asyncio.run(scenario())
 
 
 def test_websocket_handshake_and_encrypted_batched_updates(monkeypatch):

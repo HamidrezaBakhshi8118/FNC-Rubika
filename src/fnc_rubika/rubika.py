@@ -28,7 +28,7 @@ from websockets.asyncio.client import connect
 from websockets.exceptions import InvalidStatus, WebSocketException
 
 from .contracts import ContractRegistry
-from .exceptions import (AmbiguousDeliveryError, ContractError, InvalidCodeError,
+from .exceptions import (AccessDeniedError, AmbiguousDeliveryError, ContractError, InvalidCodeError,
                          RateLimitError, RemoteOperationError, SessionExpiredError,
                          TransportError, TwoStepRequiredError)
 from .models import Session
@@ -135,6 +135,8 @@ class RubikaTransport:
         status, detail = body.get('status'), body.get('status_det')
         if status == 'ERROR_ACTION' and detail == 'INVALID_AUTH':
             raise SessionExpiredError('Rubika rejected the current session')
+        if status == 'ERROR_GENERIC' and detail == 'INVALID_AUTH':
+            raise AccessDeniedError()
         if detail == 'TOO_REQUESTS':
             raise RateLimitError()
         if detail == 'PASSWORD_HASH_INVALID':
@@ -224,7 +226,9 @@ class RubikaTransport:
             if 'chat_id' in data:
                 data['object_guid'] = data.pop('chat_id')
             if operation in {'messages.send', 'messages.forward'}:
-                data['rnd'] = str(int(hashlib.sha256(idempotency_key.encode()).hexdigest()[:12], 16))
+                # Match the web client's newRnd(): an integer string in 1..1,000,000.
+                # Keep the same value across retries of this queued operation.
+                data['rnd'] = str(int(hashlib.sha256(idempotency_key.encode()).hexdigest(), 16) % 1_000_000 + 1)
             if operation == 'messages.delete':
                 data['message_ids'] = [data.pop('message_id')]
                 data['type'] = 'Global'

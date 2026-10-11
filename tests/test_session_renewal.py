@@ -102,11 +102,13 @@ def test_expired_stored_session_prompts_and_keeps_prelogin_handler(tmp_path):
     asyncio.run(scenario())
 
 
-def test_two_step_password_and_invalid_otp_retry_are_hidden(tmp_path):
+def test_two_step_password_and_invalid_otp_retry_are_hidden(tmp_path, capsys):
     class Auth:
         async def begin(self, phone):
             raise TwoStepRequiredError()
         async def begin_with_password(self, phone, password):
+            if password == 'wrong-password':
+                raise TwoStepRequiredError()
             assert password == 'existing-password'
             return 'challenge'
         async def complete(self, challenge, code):
@@ -115,13 +117,30 @@ def test_two_step_password_and_invalid_otp_retry_are_hidden(tmp_path):
             return Session('new-session')
     async def scenario():
         client = Client('two-step', data_dir=tmp_path, key_provider=PassphraseKeyProvider('long test passphrase'))
-        values = iter(['existing-password', '00000', '12345'])
+        phones = iter(['invalid', '09123456789'])
+        values = iter(['wrong-password', 'existing-password', '', '00000', '12345'])
+        prompts = []
+        def read_phone(prompt):
+            prompts.append(prompt)
+            return next(phones)
+        def read_secret(prompt):
+            prompts.append(prompt)
+            return next(values)
         try:
-            await client.login_interactive(input_func=lambda _: '09123456789', otp_input_func=lambda _: next(values), authenticator=Auth())
+            await client.login_interactive(input_func=read_phone, otp_input_func=read_secret, authenticator=Auth())
             assert client.has_session()
+            assert all(prompt.isascii() for prompt in prompts)
         finally:
             await client.aclose()
     asyncio.run(scenario())
+    output = capsys.readouterr().out
+    assert output.isascii()
+    for value in ['wrong-password', 'existing-password', '00000', '12345', '09123456789', 'new-session']:
+        assert value not in output
+    assert 'Invalid phone number format.' in output
+    assert 'The two-step password was rejected.' in output
+    assert 'The verification code is empty.' in output
+    assert 'The verification code was rejected.' in output
 
 
 def test_account_switch_cannot_reuse_previous_account_queue(tmp_path):

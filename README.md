@@ -22,6 +22,17 @@ When the session is missing, locally expired or rejected by the provider,
 password. OTPs and passwords are hidden and not stored. Session keys and the
 v6 signing key are encrypted locally.
 
+All built-in terminal messages and login prompts are in English. Persian and
+Arabic digits are still accepted for phone numbers and verification codes.
+
+`ERROR_ACTION/INVALID_AUTH` triggers session renewal. Rubika's web client treats
+`ERROR_GENERIC/INVALID_AUTH` as access denied; this raises `AccessDeniedError`,
+which also inherits from `RemoteOperationError`. Check that the destination GUID
+belongs to the intended chat and that the account has permission to send there.
+This response alone does not prove the session has expired. Failed operations
+are recorded without automatic replay. Message `rnd` values follow the web
+client's range of 1 through 1,000,000.
+
 ```python
 import asyncio
 from fnc_rubika import Client

@@ -43,6 +43,20 @@ class RemoteOperationError(FncRubikaError):
     """The provider returned a definitive, non-retryable operation failure."""
 
 
+class AccessDeniedError(RemoteOperationError):
+    """Rubika denied an operation without declaring the session expired."""
+
+    status = 'ERROR_GENERIC'
+    status_det = 'INVALID_AUTH'
+
+    def __init__(self, message: str | None = None) -> None:
+        super().__init__(message or (
+            'Rubika denied access to this operation (ERROR_GENERIC/INVALID_AUTH). '
+            'Check the destination GUID and account permissions. '
+            'The server did not report an expired session.'
+        ))
+
+
 class OperationUnknownError(FncRubikaError):
     """A non-idempotent operation has an unresolved delivery outcome."""
 

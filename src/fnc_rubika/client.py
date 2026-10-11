@@ -10,6 +10,7 @@ import random
 from typing import Any, Protocol
 
 from .exceptions import (
+    AccessDeniedError,
     AmbiguousDeliveryError,
     ClientClosedError,
     OperationUnknownError,
@@ -357,7 +358,11 @@ class AsyncClient:
                 if state["state"] == "delivered":
                     return dict(state["result"] or {})
                 if state["state"] == "failed":
-                    raise RemoteOperationError((state["error"] or {}).get("message", "The operation failed"))
+                    error = state["error"] or {}
+                    message = error.get("message", "The operation failed")
+                    if error.get('type') == 'AccessDeniedError':
+                        raise AccessDeniedError(message)
+                    raise RemoteOperationError(message)
                 if state["state"] == "unknown":
                     raise OperationUnknownError((state["error"] or {}).get("message", "Delivery outcome is unknown"))
                 self._outbox_changed.clear()
@@ -402,6 +407,8 @@ class AsyncClient:
                     self.store.retry_operation(operation_id, delay_seconds=self._retry_delay(operation), error=str(exc))
                 else:
                     self.store.fail_operation(operation_id, error=str(exc), unknown=True)
+            except AccessDeniedError as exc:
+                self.store.fail_operation(operation_id, error=str(exc), error_type='AccessDeniedError')
             except (RemoteOperationError, ContractError, ValueError, TypeError, OSError) as exc:
                 self.store.fail_operation(operation_id, error=str(exc))
             except TransportError as exc:
