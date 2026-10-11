@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="راهنمای کامل fnc-rubika: سشن رمزگذاری‌شده، چندسشنی، پیام، رسانه و قرارداد API.">
+  <title>fnc-rubika | راهنمای سشن و API</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="shell">
+      <span class="badge">Private • Python 3.11–3.13 • v0.1</span>
+      <h1>fnc-rubika<br>کلاینت سشنی پایدار و چندحسابی</h1>
+      <p class="lead">کاربر فقط نام سشن می‌دهد؛ ورود از ترمینال انجام می‌شود و هر حساب inbox، outbox و فضای رمزگذاری‌شدهٔ جدا دارد.</p>
+    </div>
+  </header>
+  <nav class="topnav" aria-label="ناوبری مستندات">
+    <div class="shell">
+      <a href="#quickstart">شروع</a>
+      <a href="#single">یک سشن</a>
+      <a href="#multi">چندسشنی</a>
+      <a href="#api">API</a>
+      <a href="#events">دریافت</a>
+      <a href="#catalog">قراردادها</a>
+      <a href="#security">امنیت</a>
+    </div>
+  </nav>
+  <main class="shell">
+    <section id="quickstart" class="grid">
+      <article class="card">
+        <h2>شروع سریع؛ بدون hard-code</h2>
+        <p>ابتدا package را در محیط خصوصی نصب کنید. سپس برای هر حساب، یک نام سشن انتخاب کنید. این نام نه شماره تلفن است و نه token.</p>
+        <pre><code>py -3.13 -m pip install .
+fnc-rubika login personal
+
+شماره روبیکا را با فرمت +989XXXXXXXXX وارد کنید: +989123456789
+کد تایید ارسال‌شده را وارد کنید: ******</code></pre>
+        <div class="notice">شماره، OTP، cookie و access token را در log یا source قرار ندهید. CLI آن‌ها را نمایش مجدد یا persist نمی‌کند.</div>
+      </article>
+    </section>
+    <section id="single" class="grid two-up">
+      <article class="card">
+        <h2>الگوی درست برای یک حساب</h2>
+        <p><code>Client</code> خودِ کلاینت اصلی است. دیگر لازم نیست <code>async_client()</code> را در کد عادی صدا بزنید.</p>
+        <pre><code>from fnc_rubika import Client
+
+async def main() -&gt; None:
+    async with Client("personal") as client:
+        sent = await client.messages.send(
+            "chat-id", "سلام"
+        )
+        print(sent.message_id)</code></pre>
+        <p><code>async_client()</code> فقط یک escape hatch برای integrationهای سطح پایین است و همان client داخلی را برمی‌گرداند.</p>
+      </article>
+      <article class="card">
+        <h2>چرخهٔ عمر سشن</h2>
+        <div class="flow">
+          <div>CLI شماره و OTP را می‌گیرد.</div>
+          <div>سشن با AES-256-GCM ذخیره می‌شود.</div>
+          <div>context manager receiver و outbox را شروع می‌کند.</div>
+          <div>خروج، اتصال‌ها و SQLite را می‌بندد.</div>
+        </div>
+        <h3>مسیر دادهٔ پیش‌فرض</h3>
+        <p><code>%LOCALAPPDATA%\fnc-rubika\personal.sqlite3</code></p>
+        <p>هر نام سشن فایل، cursor، صف ارسال و کلید idempotency جدا دارد.</p>
+      </article>
+    </section>
+    <section id="multi" class="grid">
+      <article class="card">
+        <h2>چند حساب، یک برنامه</h2>
+        <p>از <code>SessionPool</code> برای شروع و بستن هم‌زمان چند سشن استفاده کنید. دادهٔ اعضا با هم share نمی‌شود.</p>
+        <pre><code>from fnc_rubika import SessionPool
+
+async def main() -&gt; None:
+    async with SessionPool("personal", "business") as sessions:
+        personal = sessions["personal"]
+        business = sessions.get("business")
+
+        await personal.messages.send("chat-a", "پیام شخصی")
+        await business.messages.send("chat-b", "پیام کاری")</code></pre>
+        <div class="ok">هر عضو pool باید پیش‌تر با <code>fnc-rubika login &lt;name&gt;</code> وارد شده باشد.</div>
+      </article>
+    </section>
+    <section id="api" class="grid">
+      <article class="card">
+        <h2>مرجع فشردهٔ API عمومی</h2>
+        <div class="table-wrap"><table>
+          <thead><tr><th>عضو</th><th>امضا</th><th>خروجی / نکته</th></tr></thead>
+          <tbody>
+            <tr><td>ساخت</td><td><code>Client(session_name, *, registry=None, contract_path=None, data_dir=None, key_provider=None)</code></td><td>نام ۱–۶۴ کاراکتری؛ یک store مستقل می‌سازد.</td></tr>
+            <tr><td>چرخهٔ عمر</td><td><code>await start()</code> / <code>await aclose()</code></td><td>یا مستقیماً <code>async with Client(name)</code>.</td></tr>
+            <tr><td>ورود</td><td><code>await login(phone, code, *, authenticator=None)</code></td><td>ترجیحاً CLI؛ شماره باید <code>+989…</code> باشد.</td></tr>
+            <tr><td>ورود تعاملی</td><td><code>await login_interactive(*, input_func=input)</code></td><td>شماره و OTP از terminal.</td></tr>
+            <tr><td>پیام</td><td><code>messages.send/reply/edit/delete/forward/history</code></td><td>mutationها durable و قابل بازیابی‌اند.</td></tr>
+            <tr><td>رسانه</td><td><code>media.upload(path, *, content_type=None, wait=True, timeout=60)</code><br><code>media.download(file_id, destination)</code></td><td>در upload فایل تا پایان outbox باید باقی بماند.</td></tr>
+            <tr><td>event</td><td><code>events()</code>، <code>on(type, handler)</code>، <code>run(*, workers=1)</code></td><td>delivery بعد از موفقیت ack می‌شود.</td></tr>
+            <tr><td>صف</td><td><code>wait_operation(operation_id, *, timeout=30)</code></td><td>برای نتیجهٔ <code>wait=False</code>.</td></tr>
+            <tr><td>catalog</td><td><code>api.&lt;namespace&gt;.&lt;operation&gt;(**payload)</code></td><td>فقط operationهای بازبینی‌شده ظاهر می‌شوند.</td></tr>
+          </tbody>
+        </table></div>
+        <p>جدول کامل همهٔ ورودی‌ها، خروجی‌ها، modelها و errorها در <a href="../API_REFERENCE.fa.md">مرجع کامل Markdown</a> است.</p>
+      </article>
+    </section>
+    <section id="events" class="grid two-up">
+      <article class="card">
+        <h2>دریافت قابل‌بازیابی</h2>
+        <pre><code>async with Client("personal") as client:
+    async for delivery in client.events():
+        try:
+            await save_once(
+                delivery.event.event_id,
+                delivery.event.payload,
+            )
+        except Exception:
+            await delivery.nack()
+        else:
+            await delivery.ack()</code></pre>
+        <p>تحویل <span class="code">at-least-once</span> است. <code>event_id</code> را در دیتابیس خودتان unique کنید.</p>
+      </article>
+      <article class="card">
+        <h2>ارسال قابل‌بازیابی</h2>
+        <pre><code>queued = await client.messages.send(
+    "chat-id", "سلام", wait=False
+)
+result = await client.wait_operation(
+    queued.operation_id, timeout=60
+)</code></pre>
+        <p>پس از timeout مبهم، retry تنها برای routeهایی انجام می‌شود که catalog آن‌ها را صریحاً idempotent دانسته باشد.</p>
+      </article>
+    </section>
+    <section id="catalog" class="grid">
+      <article class="card">
+        <h2>endpoint و WebSocket: واقعیت فعلی</h2>
+        <p>catalog همراه این repository عمداً placeholder است؛ هیچ endpoint واقعی Rubika حدس یا ادعا نشده است. پس از بررسی مجاز هر contract، همان نام بدون hard-code از <code>client.api</code> قابل فراخوانی است.</p>
+        <div class="notice">تا وقتی catalog رسمی/بازبینی‌شده وارد نشده، login زنده و فراخوانی API واقعی فعال نیست. این یک محدودیت صریح امنیتی و پایداری است، نه قابلیت پنهان.</div>
+        <p>روش ثبت schema، pagination، OTP، handshake، heartbeat، frameهای WS و redaction در <a href="../CONTRACT_CATALOG.fa.md">راهنمای قرارداد</a> آمده است.</p>
+      </article>
+    </section>
+    <section id="security" class="grid two-up">
+      <article class="card"><h2>امنیت</h2><ul><li>کلید خارج از SQLite و در OS keyring است.</li><li>OTP و token log نمی‌شوند.</li><li>سشن منقضی‌شده خودکار login نمی‌کند.</li><li>فایل‌های session و salt را commit نکنید.</li></ul></article>
+      <article class="card"><h2>مستندات تکمیلی</h2><ul><li><a href="../USER_GUIDE.fa.md">شروع سریع Markdown</a></li><li><a href="../SESSIONS.fa.md">راهنمای چندسشنی و restart</a></li><li><a href="../API_REFERENCE.fa.md">مرجع کامل API</a></li><li><a href="../CONTRACT_CATALOG.fa.md">سیاست catalog و WebSocket</a></li></ul></article>
+    </section>
+  </main>
+  <footer class="shell footer">fnc-rubika • مستندات آفلاین • داده و قراردادهای حساس را منتشر نکنید.</footer>
+</body>
+</html>
+

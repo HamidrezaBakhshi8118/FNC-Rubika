@@ -5,6 +5,7 @@ from .auth import Client, ContractOtpAuthenticator, validate_iranian_phone
 from .models import Delivery, EventEnvelope, MediaRef, Message, Session
 from .storage import EncryptedSQLiteStore, KeyringKeyProvider, PassphraseKeyProvider
 from .sync import SyncClient
+from .sessions import SessionPool
 
 __all__ = [
     "AsyncClient",
@@ -18,6 +19,7 @@ __all__ = [
     "Message",
     "PassphraseKeyProvider",
     "Session",
+    "SessionPool",
     "SyncClient",
     "validate_iranian_phone",
 ]

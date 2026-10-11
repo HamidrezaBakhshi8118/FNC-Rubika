@@ -7,6 +7,7 @@ from datetime import datetime
 import os
 from pathlib import Path
 import re
+from collections.abc import AsyncIterator
 from typing import Any, Callable, Mapping
 from uuid import uuid4
 
@@ -92,7 +93,13 @@ class ContractOtpAuthenticator:
 
 
 class Client:
-    """A named user session: ``Client('personal')`` keeps its own encrypted store."""
+    """A named, encrypted session with an ergonomic async lifecycle.
+
+    The usual application shape is ``async with Client("personal") as client``.
+    Each name maps to a different encrypted SQLite file, inbox cursor, and
+    outbox.  It is therefore safe to keep, for example, ``personal`` and
+    ``business`` open in the same process.
+    """
 
     def __init__(
         self,
@@ -114,6 +121,18 @@ class Client:
             key_provider=key_provider or KeyringKeyProvider(),
         )
         self._client: AsyncClient | None = None
+        self._closed = False
+
+    async def __aenter__(self) -> "Client":
+        """Open the stored named session and start its receiver/outbox workers."""
+
+        await self.start()
+        return self
+
+    async def __aexit__(self, *_: object) -> None:
+        """Stop network workers and close this session's encrypted store."""
+
+        await self.aclose()
 
     def has_session(self) -> bool:
         return self.store.load_secret("session") is not None
@@ -152,6 +171,12 @@ class Client:
         return session
 
     def async_client(self) -> AsyncClient:
+        """Return the low-level client for advanced integrations.
+
+        Most applications do not need this method: :class:`Client` forwards
+        ``messages``, ``media``, ``api``, ``events()``, ``on()``, and ``run()``.
+        """
+
         if self._client is not None:
             return self._client
         stored = self.store.load_secret("session")
@@ -160,7 +185,61 @@ class Client:
         self._client = self._build(Session.from_dict(stored))
         return self._client
 
+    async def start(self) -> None:
+        """Start durable receiving and sending for this named session."""
+
+        if self._closed:
+            raise RuntimeError("This named session is closed and cannot be restarted")
+        await self.async_client().start()
+
+    @property
+    def messages(self) -> Any:
+        """Typed message service for this named session."""
+
+        return self.async_client().messages
+
+    @property
+    def media(self) -> Any:
+        """Typed media service for this named session."""
+
+        return self.async_client().media
+
+    @property
+    def api(self) -> Any:
+        """All operations that exist in the active reviewed catalog."""
+
+        return self.async_client().api
+
+    @property
+    def session_expired(self) -> bool:
+        """Whether the provider rejected this session and it needs manual login."""
+
+        return self.async_client().session_expired
+
+    def on(self, event_type: str, handler: Callable[..., Any] | None = None) -> Any:
+        """Register a durable event handler; accepts ``@client.on("message")``."""
+
+        return self.async_client().on(event_type, handler)
+
+    def events(self) -> AsyncIterator[Any]:
+        """Iterate durable deliveries and explicitly ``ack`` or ``nack`` each one."""
+
+        return self.async_client().events()
+
+    async def run(self, *, workers: int = 1) -> None:
+        """Dispatch registered event handlers until cancelled or closed."""
+
+        await self.async_client().run(workers=workers)
+
+    async def wait_operation(self, operation_id: str, *, timeout: float | None = 30) -> Mapping[str, Any]:
+        """Wait for a durable queued mutation to reach a terminal state."""
+
+        return await self.async_client().wait_operation(operation_id, timeout=timeout)
+
     async def aclose(self) -> None:
+        if self._closed:
+            return
+        self._closed = True
         if self._client is not None:
             await self._client.aclose()
         self.store.close()

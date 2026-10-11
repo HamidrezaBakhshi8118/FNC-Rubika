@@ -40,12 +40,14 @@ Session 'personal' was created securely.
 ```python
 from fnc_rubika import Client
 
-client = Client("personal")
-app = client.async_client()
-
-async with app:
-    sent = await app.messages.send("chat-id", "سلام")
+async with Client("personal") as client:
+    sent = await client.messages.send("chat-id", "سلام")
 ```
+
+`Client("personal")` خودش کلاینت سشنی است؛ در کاربرد عادی نیازی به
+`async_client()` ندارید. آن متد فقط برای integrationهای سطح پایین باقی مانده
+است. برای چند حساب هم‌زمان، از `SessionPool` استفاده کنید؛ راهنمای کامل در
+[SESSIONS.fa.md](SESSIONS.fa.md) است.
 
 برای ساخت سشن در یک برنامهٔ ترمینالی، بدون ذخیره‌سازی شماره یا code در source:
 
@@ -53,7 +55,10 @@ async with app:
 from fnc_rubika import Client
 
 client = Client("personal")
-await client.login_interactive()
+try:
+    await client.login_interactive()
+finally:
+    await client.aclose()
 ```
 
 ## همهٔ APIها بدون hard-code
@@ -61,10 +66,11 @@ await client.login_interactive()
 `fnc-rubika` دو سطح API دارد:
 
 1. APIهای typed و پایدار برای مسیرهای پرکاربرد: `messages.send`, `reply`, `edit`, `delete`, `forward`, `history` و `media.upload/download`.
-2. `app.api` که هر operation موجود در catalog بازبینی‌شده را خودکار در اختیار می‌گذارد. اگر catalog شامل `chats.get_info` باشد، همان لحظه این فراخوانی بدون افزودن route به برنامهٔ مصرف‌کننده قابل استفاده است:
+2. `client.api` که هر operation موجود در catalog بازبینی‌شده را خودکار در اختیار می‌گذارد. اگر catalog شامل `chats.get_info` باشد، همان لحظه این فراخوانی بدون افزودن route به برنامهٔ مصرف‌کننده قابل استفاده است:
 
 ```python
-result = await app.api.chats.get_info(chat_id="chat-id")
+async with Client("personal") as client:
+    result = await client.api.chats.get_info(chat_id="chat-id")
 ```
 
 برای operationهای تغییردهنده، catalog مشخص می‌کند که درخواست باید از outbox پایدار و idempotency عبور کند. برای خواندن، همان catalog روش HTTP، schema، pagination و خطاها را تعیین می‌کند. به این ترتیب با کامل‌شدن catalog مجاز، همهٔ APIها قابل دسترسی‌اند و کاربر endpoint یا payload transport را hard-code نمی‌کند.
@@ -72,8 +78,8 @@ result = await app.api.chats.get_info(chat_id="chat-id")
 ## دریافت پایدار پیام
 
 ```python
-async with app:
-    async for delivery in app.events():
+async with Client("personal") as client:
+    async for delivery in client.events():
         try:
             await save_to_database(delivery.event)
         except Exception:
