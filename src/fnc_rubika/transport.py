@@ -102,8 +102,10 @@ class HttpWebSocketTransport:
             raise TransportError("The media file could not be opened") from exc
         except httpx.TimeoutException as exc:
             raise AmbiguousDeliveryError("The request timed out before delivery could be confirmed") from exc
-        except httpx.HTTPError as exc:
+        except (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout) as exc:
             raise TransportError("The HTTP request failed") from exc
+        except httpx.HTTPError as exc:
+            raise AmbiguousDeliveryError("The connection ended before delivery could be confirmed") from exc
         return self._decode_response(response, endpoint.success_statuses)
 
     def supports_idempotency(self, operation: str) -> bool:

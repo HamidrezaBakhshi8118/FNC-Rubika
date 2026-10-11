@@ -1,73 +1,37 @@
-# قرارداد endpoint و WebSocket
+# شواهد پروتکل وب روبیکا
 
-## وضعیت واقعی این repository
+در ۲۰۲۶-۱۰-۱۱ تب واردشده روبیکا در Chrome بررسی شد. آدرس فایل عمومی main از
+موجودی فایل‌های صفحه خوانده شد و فایل بدون cookie یا auth دانلود و به‌صورت
+متن بررسی شد. سشن مرورگر، localStorage و اطلاعات گفت‌وگو به پکیج منتقل نشدند.
 
-این repository در حال حاضر catalog نمونه/placeholder دارد و آن **هیچ مسیر یا
-WebSocket واقعی Rubika را ادعا نمی‌کند**. چنین ادعایی بدون مستندات رسمی یا
-بررسی مجاز حساب آزمایشی، هم ناپایدار و هم ناامن است.
+نام منبع `main-es2015.6421623571994c9dd619.js` و نسخه وب `4.4.34` است. URL،
+SHA-256، تاریخ و وضعیت source-only در provider کاتالوگ ثبت شده‌اند. ۲۰۳ نام
+literal و دو نام نسخه ۶ از جدول رشته‌ها حل شدند. همراه ۶ alias، ۲۱۱ operation
+وجود دارد. نام‌های متد و شواهد callsite در [WEB_METHODS.fa.md](WEB_METHODS.fa.md)
+و کاتالوگ JSON موجودند.
 
-`fnc-rubika` برای پوشش همهٔ APIها آماده است: هر operation بررسی‌شده‌ای که به
-catalog اضافه شود بدون hard-code در `client.api` در دسترس خواهد بود؛ اما
-«آماده بودن معماری» با «کشف و تأیید همهٔ endpointهای زنده» یکسان نیست.
+پیاده‌سازی شامل getDCs نسخه ۴، AES-CBC و PKCS7 مطابق وب‌کلاینت، temporary
+session مستقل برای کد، رمز دومرحله‌ای موجود، signIn با کلید RSA مستقل،
+رمزگشایی auth با RSA-OAEP و امضای نسخه ۶ با SHA-256 است. WebSocket با handshake
+نسخه ۵ و auth اصلی وصل می‌شود و heartbeat از نوع `{}` دارد. آپلود قسمت‌بندی
+و دانلود با descriptor پیاده شده‌اند.
 
-## چه چیزهایی باید ثبت شود
+تست‌های محلی رمزگذاری، ورود، امضا، خطاها، handshake، batch و ورود مجدد پاس
+شده‌اند. درخواست عمومی getDCs روی سرویس واقعی موفق شد و سه API و سه آدرس
+WebSocket برگرداند. این نتیجه، ورود حساب یا اتصال WebSocket حساب‌دار را
+تأیید نمی‌کند. رابط Chrome ابزار ضبط مستقیم Network و WebSocket نداشت؛
+capture زنده و schema کامل تمام درخواست‌ها تهیه نشده است. پوشش نام‌های فایل
+وب با تأیید عملکرد تمام APIهای سرویس یکسان نیست.
 
-هر endpoint باید این موارد را با fixtureهای redact‌شده داشته باشد:
+resume token مشاهده نشده و بازیابی خودکار شکاف رویدادها پیاده نشده است.
+WebRTC تماس صوتی پیاده نشده است. rnd در منبع مشاهده شده، اما تضمین
+idempotency سرویس تأیید نشده؛ ارسال مبهم خودکار تکرار نمی‌شود.
 
-| کلید | کاربرد |
-| --- | --- |
-| `operation` | نام پایدار نقطه‌ای مانند `messages.send` |
-| `method`, `path`, `base_url` | قرارداد HTTP دقیق و version آن |
-| `auth` | نیاز یا عدم نیاز به سشن |
-| `operation_kind` | `read` یا `mutation`؛ mutation اجباراً outbox durable می‌گیرد |
-| `idempotency_header` | فقط اگر سرویس صراحتاً پشتیبانی می‌کند |
-| `request_schema`, `response_schema`, `errors` | ورودی، خروجی، خطاها و fieldهای اجباری |
-| `pagination` | cursor/limit/next cursor اگر وجود دارد |
-| `body_mode`, `file_field` | برای آپلودهای multipart |
+برای بازتولید استخراج از همان فایل عمومی:
 
-قرارداد OTP نیز باید نام operationهای request/verify و fieldهای phone,
-challenge, code, token, device و expiry را مشخص کند؛ هیچ مقدار واقعی secret
-نباید در catalog وجود داشته باشد.
-
-برای WebSocket باید URL، handshake/auth، روش resume، heartbeat، و fieldهای
-`event_id`, `type`, `payload`, `cursor` ثبت و با disconnect کنترل‌شده تست شود.
-
-## روند مجاز کشف و بازبینی
-
-1. فقط با حساب و گفت‌وگوی آزمایشی مجاز وارد web/client رسمی شوید.
-2. از ابزار توسعه‌دهنده، روش، host، path، headerهای **غیرحساس**، schemaهای
-   request/response، status و frameهای WebSocket را ثبت کنید.
-3. token، cookie، authorization header، شماره، متن واقعی پیام، شناسهٔ شخصی و
-   URL رسانه را پیش از ذخیره یا commit redact کنید.
-4. رفتار pagination، rate limit، retry، session expiry و reconnect را در یک
-   محیط آزمایشی جدا تایید کنید.
-5. هر route را با integration test بازتولید کنید؛ سپس به catalog versioned
-   اضافه کنید.
-6. تنها پس از review، آن route برای مصرف‌کننده از `client.api` ظاهر می‌شود.
-
-از دریافت یا ارسال انبوه، تلاش برای دورزدن quota، جعل client fingerprint،
-یا استفاده از دادهٔ سایر کاربران خودداری کنید. این کتابخانه نیز نباید چنین
-رفتاری پیاده‌سازی کند.
-
-## نتیجهٔ مورد انتظار پس از تکمیل catalog
-
-فرض کنید catalog تاییدشده operationهای زیر را تعریف کرده باشد:
-
-```json
-[
-  {"operation": "chats.get_info", "operation_kind": "read"},
-  {"operation": "contacts.search", "operation_kind": "read"},
-  {"operation": "messages.pin", "operation_kind": "mutation"}
-]
+```powershell
+python scripts/extract_web_catalog.py bundle.js src/fnc_rubika/contracts/rubika-session.catalog.json
 ```
 
-فراخوانی‌های public بدون route hard-code‌شده چنین‌اند:
-
-```python
-await client.api.chats.get_info(chat_id="...")
-await client.api.contacts.search(query="...")
-await client.api.messages.pin(chat_id="...", message_id="...")
-```
-
-وجود واقعی و schema این نمونه‌ها را این repository تایید نمی‌کند؛ نمونه فقط
-نشان می‌دهد namespaceهای catalog چگونه به API تبدیل می‌شوند.
+ابزار فقط متن JavaScript را می‌خواند و آن را اجرا نمی‌کند. برای نسخه‌های
+دیگر وب، قواعد استخراج و رمزگذاری باید دوباره بررسی شوند.

@@ -101,6 +101,14 @@ class EncryptedSQLiteStore:
             self._connection.execute("PRAGMA journal_mode=WAL")
             self._connection.execute("PRAGMA foreign_keys=ON")
             self._create_schema()
+            self._recover_interrupted_operations()
+
+    def _recover_interrupted_operations(self) -> None:
+        # One process owns each named store. After a crash, sending may have
+        # reached the provider, so never automatically replay those mutations.
+        rows = self._connection.execute("SELECT operation_id FROM outbox WHERE state='sending'").fetchall()
+        for row in rows:
+            self.fail_operation(str(row['operation_id']), error='Process stopped before delivery was confirmed', unknown=True)
 
     @classmethod
     def from_passphrase(cls, path: str | Path, passphrase: str) -> "EncryptedSQLiteStore":

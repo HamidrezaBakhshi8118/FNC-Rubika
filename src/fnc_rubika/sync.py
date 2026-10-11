@@ -82,6 +82,13 @@ class SyncClient:
         self._closed = False
         self.messages = _SyncMessages(self)
         self.media = _SyncMedia(self)
+        self.api = _SyncApi(self)
+
+    def __getattr__(self, name: str):
+        registry = getattr(self._async, 'registry', None) or getattr(self._async.transport, 'registry', None)
+        if name.startswith('_') or registry is None or name not in registry.operations():
+            raise AttributeError(name)
+        return lambda **payload: self.api.call(name, payload)
 
     def __enter__(self) -> "SyncClient":
         self.start()
@@ -124,3 +131,23 @@ class SyncClient:
 
     def run(self, *, workers: int = 1) -> None:
         self._run(self._async.run(workers=workers), timeout=None)
+
+
+class _SyncApi:
+    def __init__(self, owner: SyncClient, operation: str = '') -> None:
+        self._owner = owner
+        self._operation = operation
+
+    def __getattr__(self, name: str):
+        if name.startswith('_'):
+            raise AttributeError(name)
+        return _SyncApi(self._owner, f'{self._operation}.{name}' if self._operation else name)
+
+    def __call__(self, **payload):
+        return self.call(self._operation, **payload)
+
+    def call(self, operation: str, payload=None, *, wait=True, timeout=30, **keyword_payload):
+        async def invoke():
+            await self._owner._async.start()
+            return await self._owner._async.api.call(operation, payload, wait=wait, timeout=timeout, **keyword_payload)
+        return self._owner._run(invoke())

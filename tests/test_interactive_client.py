@@ -43,8 +43,10 @@ class CatalogTransport:
 
 def test_iranian_phone_format_is_unambiguous():
     assert validate_iranian_phone("+98 912-345-6789") == "+989123456789"
+    assert validate_iranian_phone("09123456789") == "+989123456789"
+    assert validate_iranian_phone("۰۹۱۲۳۴۵۶۷۸۹") == "+989123456789"
     with pytest.raises(ValueError):
-        validate_iranian_phone("09123456789")
+        validate_iranian_phone("0912")
 
 
 def test_named_client_creates_an_encrypted_session_without_user_hardcoding(tmp_path):

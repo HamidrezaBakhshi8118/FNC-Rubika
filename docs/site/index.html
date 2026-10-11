@@ -10,7 +10,7 @@
 <body>
   <header class="hero">
     <div class="shell">
-        <span class="badge">Private • Python 3.11–3.14 • v0.1</span>
+        <span class="badge">Private • Python 3.11–3.14 • v0.2</span>
       <h1>fnc-rubika<br>کلاینت سشنی پایدار و چندحسابی</h1>
       <p class="lead">کاربر فقط نام سشن می‌دهد؛ ورود از ترمینال انجام می‌شود و هر حساب inbox، outbox و فضای رمزگذاری‌شدهٔ جدا دارد.</p>
     </div>
@@ -32,7 +32,7 @@
         <h2>شروع سریع؛ بدون hard-code</h2>
         <p>ابتدا package را در محیط خصوصی نصب کنید. سپس برای هر حساب، یک نام سشن انتخاب کنید. این نام نه شماره تلفن است و نه token؛ login نخست مستقیماً از داخل برنامه انجام می‌شود.</p>
         <pre><code>py -3.14 -m pip install .
-python app.py
+python -m fnc_rubika login personal
 
 ساخت سشن رمزگذاری‌شدهٔ «personal»
 شماره روبیکا را با فرمت +989XXXXXXXXX وارد کنید: +989123456789
@@ -133,13 +133,13 @@ result = await client.wait_operation(
     <section id="catalog" class="grid">
       <article class="card">
         <h2>endpoint و WebSocket: واقعیت فعلی</h2>
-        <p>catalog همراه این repository عمداً placeholder است؛ هیچ endpoint واقعی Rubika حدس یا ادعا نشده است. پس از بررسی مجاز هر contract، همان نام بدون hard-code از <code>client.api</code> قابل فراخوانی است.</p>
-        <div class="notice">تا وقتی catalog رسمی/بازبینی‌شده وارد نشده، login زنده و فراخوانی API واقعی فعال نیست. این یک محدودیت صریح امنیتی و پایداری است، نه قابلیت پنهان.</div>
+        <p>کاتالوگ عمومی وب شامل ۲۰۵ نام RPC و ۶ alias است. client.api.getChats در کلاینت هم‌زمان و ناهم‌زمان در دسترس است.</p>
+        <div class="notice">تست‌های محلی و کشف عمومی سرورها پاس شده‌اند. ورود حساب و تمام schemaها هنوز تأیید زنده نشده‌اند. بازیابی خودکار رخدادهای زمان قطع پیاده نشده است.</div>
         <p>روش ثبت schema، pagination، OTP، handshake، heartbeat، frameهای WS و redaction در <a href="../CONTRACT_CATALOG.fa.md">راهنمای قرارداد</a> آمده است.</p>
       </article>
     </section>
     <section id="security" class="grid two-up">
-      <article class="card"><h2>امنیت</h2><ul><li>کلید خارج از SQLite و در OS keyring است.</li><li>OTP و token log نمی‌شوند.</li><li>سشن منقضی‌شده خودکار login نمی‌کند.</li><li>فایل‌های session و salt را commit نکنید.</li></ul></article>
+      <article class="card"><h2>امنیت</h2><ul><li>کلید خارج از SQLite و در OS keyring است.</li><li>OTP و token log نمی‌شوند.</li><li>سشن منقضی‌شده یا ردشده، ورود مجدد ترمینالی دارد.</li><li>فایل‌های session و salt را commit نکنید.</li></ul></article>
       <article class="card"><h2>مستندات تکمیلی</h2><ul><li><a href="../USER_GUIDE.fa.md">شروع سریع Markdown</a></li><li><a href="../SESSIONS.fa.md">راهنمای چندسشنی و restart</a></li><li><a href="../API_REFERENCE.fa.md">مرجع کامل API</a></li><li><a href="../CONTRACT_CATALOG.fa.md">سیاست catalog و WebSocket</a></li></ul></article>
     </section>
   </main>

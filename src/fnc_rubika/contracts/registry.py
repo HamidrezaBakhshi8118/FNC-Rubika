@@ -25,6 +25,12 @@ class EndpointSpec:
     body_mode: str = "json"
     file_field: str = "file"
     operation_kind: str = "read"
+    rpc_method: str | None = None
+    dc_type: str = "api"
+    target_url: str | None = None
+    api_version: str | None = None
+    wire_mode: str = "encrypted"
+    target_url_field: str | None = None
 
     @property
     def supports_idempotency(self) -> bool:
@@ -60,12 +66,14 @@ class AuthenticationSpec:
 class ContractRegistry:
     """Loads only explicitly reviewed contract catalogs from JSON."""
 
-    def __init__(self, *, version: str, base_url: str, endpoints: Mapping[str, EndpointSpec], websocket: WebSocketSpec | None = None, authentication: AuthenticationSpec | None = None) -> None:
+    def __init__(self, *, version: str, base_url: str, endpoints: Mapping[str, EndpointSpec], websocket: WebSocketSpec | None = None, authentication: AuthenticationSpec | None = None, protocol: str = "generic", provider: Mapping[str, Any] | None = None) -> None:
         self.version = version
         self.base_url = base_url.rstrip("/")
         self._endpoints = dict(endpoints)
         self.websocket = websocket
         self.authentication = authentication
+        self.protocol = protocol
+        self.provider = dict(provider or {})
 
     @classmethod
     def from_file(cls, path: str | Path) -> "ContractRegistry":
@@ -94,6 +102,12 @@ class ContractRegistry:
                     body_mode=str(item.get("body_mode", "json")),
                     file_field=str(item.get("file_field", "file")),
                     operation_kind=str(item.get("operation_kind", "read")),
+                    rpc_method=item.get("rpc_method"),
+                    dc_type=str(item.get("dc_type", "api")),
+                    target_url=item.get("target_url"),
+                    api_version=item.get("api_version"),
+                    wire_mode=str(item.get("wire_mode", "encrypted")),
+                    target_url_field=item.get("target_url_field"),
                 )
                 for item in value.get("endpoints", [])
             }
@@ -110,6 +124,8 @@ class ContractRegistry:
                 endpoints=endpoints,
                 websocket=websocket,
                 authentication=authentication,
+                protocol=str(value.get("protocol", "generic")),
+                provider=value.get("provider"),
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise ContractError("The contract catalog has an invalid shape") from exc

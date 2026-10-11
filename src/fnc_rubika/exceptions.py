@@ -50,3 +50,10 @@ class OperationUnknownError(FncRubikaError):
 class ClientClosedError(FncRubikaError):
     """The client was used after close."""
 
+
+class TwoStepRequiredError(FncRubikaError):
+    """The login flow requires the existing two-step password."""
+
+
+class InvalidCodeError(RemoteOperationError):
+    """The supplied OTP was rejected; a fresh input may be attempted."""

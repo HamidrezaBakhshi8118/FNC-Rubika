@@ -8,13 +8,14 @@ from getpass import getpass
 import os
 from pathlib import Path
 import re
+import threading
 from collections.abc import AsyncIterator
 from typing import Any, Callable, Mapping
 from uuid import uuid4
 
 from .client import AsyncClient, OtpAuthenticator
 from .contracts import AuthenticationSpec, ContractRegistry
-from .exceptions import ContractError, SecurityConfigurationError
+from .exceptions import ContractError, SecurityConfigurationError, InvalidCodeError, TwoStepRequiredError, SessionExpiredError
 from .models import Session
 from .storage import EncryptedSQLiteStore, KeyProvider, KeyringKeyProvider
 from .terminal import info as terminal_info
@@ -24,10 +25,17 @@ from .transport import HttpWebSocketTransport
 
 _SESSION_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}")
 _IRAN_PHONE = re.compile(r"\+989\d{9}\Z")
+_TERMINAL_LOGIN_LOCK = threading.Lock()
 
 
 def validate_iranian_phone(value: str) -> str:
-    normalized = value.strip().replace(" ", "").replace("-", "")
+    normalized = value.translate(str.maketrans('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩', '01234567890123456789')).strip().replace(" ", "").replace("-", "")
+    if normalized.startswith('0098'):
+        normalized = '+'+normalized[2:]
+    elif normalized.startswith('98'):
+        normalized = '+'+normalized
+    elif normalized.startswith('09'):
+        normalized = '+98'+normalized[1:]
     if not _IRAN_PHONE.fullmatch(normalized):
         raise ValueError("Phone number must use the +989XXXXXXXXX format")
     return normalized
@@ -112,6 +120,10 @@ class Client:
         contract_path: str | Path | None = None,
         data_dir: str | Path | None = None,
         key_provider: KeyProvider | None = None,
+        auto_login: bool = True,
+        authenticator_factory: Callable[[], OtpAuthenticator] | None = None,
+        input_func: Callable[[str], str] = input,
+        otp_input_func: Callable[[str], str] = getpass,
     ) -> None:
         if not _SESSION_NAME.fullmatch(session_name):
             raise ValueError("Session name must contain 1-64 letters, numbers, '_' or '-' and begin with a letter or number")
@@ -125,12 +137,43 @@ class Client:
         )
         self._client: AsyncClient | None = None
         self._closed = False
+        self.auto_login = auto_login
+        self._authenticator_factory = authenticator_factory
+        self._input_func = input_func
+        self._otp_input_func = otp_input_func
+        self._start_lock = asyncio.Lock()
+        self._handlers: list[tuple[str, Callable[..., Any]]] = []
 
     async def __aenter__(self) -> "Client":
         """Open a session, interactively creating it when no session exists."""
 
-        await self.start()
+        try:
+            await self.start()
+        except BaseException:
+            await self.aclose()
+            raise
         return self
+
+    def __enter__(self):
+        from .sync import SyncClient
+        self._sync = SyncClient(self)
+        try:
+            return self._sync.__enter__()
+        except BaseException:
+            self._sync.close()
+            raise
+
+    def __exit__(self, *_: object) -> None:
+        self._sync.close()
+
+    def __getattr__(self, name: str):
+        registry = self.__dict__.get('registry')
+        if registry is None or name.startswith('_') or name not in registry.operations():
+            raise AttributeError(name)
+        async def call(*, wait: bool = True, timeout: float | None = 30, **payload):
+            await self.start()
+            return await self.api.call(name, payload, wait=wait, timeout=timeout)
+        return call
 
     async def __aexit__(self, *_: object) -> None:
         """Stop network workers and close this session's encrypted store."""
@@ -141,29 +184,81 @@ class Client:
         return self.store.load_secret("session") is not None
 
     def _build(self, session: Session) -> AsyncClient:
-        return AsyncClient(HttpWebSocketTransport(self.registry, session), self.store)
+        client = AsyncClient(self._transport(session), self.store,
+                             reauthenticate=self._renew_transport if self.auto_login else None)
+        for event_type, handler in self._handlers:
+            client.on(event_type, handler)
+        return client
+
+    def _transport(self, session: Session):
+        if self.registry.protocol == 'rubika':
+            from .rubika import RubikaTransport
+            return RubikaTransport(self.registry, session)
+        return HttpWebSocketTransport(self.registry, session)
+
+    def _authenticator(self) -> OtpAuthenticator:
+        if self._authenticator_factory is not None:
+            return self._authenticator_factory()
+        if self.registry.protocol == 'rubika':
+            from .rubika import RubikaOtpAuthenticator
+            return RubikaOtpAuthenticator(self.registry)
+        return ContractOtpAuthenticator(self.registry)
+
+    async def _renew_transport(self):
+        terminal_info('سشن منقضی شده است؛ برای ادامه دوباره وارد شوید.')
+        session = await self._prompt_session(input_func=self._input_func, otp_input_func=self._otp_input_func)
+        self._check_account(session)
+        self.store.save_secret('session', session.as_dict())
+        transport = self._transport(session)
+        try:
+            prepare = getattr(transport, 'prepare', None)
+            if prepare:
+                await prepare()
+        except BaseException:
+            await transport.aclose()
+            raise
+        return transport
+
+    async def _save_session(self, session: Session) -> None:
+        if self._closed:
+            raise RuntimeError('This named session is closed')
+        self._check_account(session)
+        self.store.save_secret('session', session.as_dict())
+        if self._client is None:
+            self._client = self._build(session)
+        else:
+            await self._client.replace_transport(self._transport(session))
+
+    def _check_account(self, session: Session) -> None:
+        previous = self.store.load_secret('session')
+        previous_id = previous.get('account_id') if previous else None
+        if previous_id and previous_id != session.account_id:
+            raise SecurityConfigurationError('This store belongs to another account; use a different session name')
 
     async def login(self, phone_number: str, code: str, *, authenticator: OtpAuthenticator | None = None) -> Session:
         phone_number = validate_iranian_phone(phone_number)
-        owned_authenticator: ContractOtpAuthenticator | None = None
+        if self._closed:
+            raise RuntimeError('This named session is closed')
+        owned_authenticator = None
         if authenticator is None:
-            owned_authenticator = ContractOtpAuthenticator(self.registry)
+            owned_authenticator = self._authenticator()
             authenticator = owned_authenticator
         try:
             challenge_id = await authenticator.begin(phone_number)
             session = await authenticator.complete(challenge_id, code)
         finally:
             if owned_authenticator is not None:
-                await owned_authenticator.aclose()
-        self.store.save_secret("session", session.as_dict())
-        self._client = self._build(session)
+                close = getattr(owned_authenticator, 'aclose', None)
+                if close:
+                    await close()
+        await self._save_session(session)
         return session
 
     async def login_interactive(
         self,
         *,
-        input_func: Callable[[str], str] = input,
-        otp_input_func: Callable[[str], str] = getpass,
+        input_func: Callable[[str], str] | None = None,
+        otp_input_func: Callable[[str], str] | None = None,
         authenticator: OtpAuthenticator | None = None,
     ) -> Session:
         """Create this session from terminal input without echoing the OTP.
@@ -172,28 +267,69 @@ class Client:
         Phone number, verification code, and session material are never logged.
         """
 
-        owned_authenticator: ContractOtpAuthenticator | None = None
-        if authenticator is None:
-            owned_authenticator = ContractOtpAuthenticator(self.registry)
-            authenticator = owned_authenticator
-        try:
-            terminal_info(f"ساخت سشن رمزگذاری‌شدهٔ «{self.session_name}»")
-            phone = await asyncio.to_thread(
-                input_func,
-                prompt_label("شماره روبیکا را با فرمت +989XXXXXXXXX وارد کنید"),
-            )
-            phone = validate_iranian_phone(phone)
-            challenge_id = await authenticator.begin(phone)
-            terminal_info("کد تأیید ارسال شد؛ آن را بدون نمایش در ترمینال وارد کنید.")
-            code = await asyncio.to_thread(otp_input_func, prompt_label("کد تأیید"))
-            session = await authenticator.complete(challenge_id, code)
-        finally:
-            if owned_authenticator is not None:
-                await owned_authenticator.aclose()
-        self.store.save_secret("session", session.as_dict())
-        self._client = self._build(session)
+        session = await self._prompt_session(input_func=input_func or self._input_func, otp_input_func=otp_input_func or self._otp_input_func, authenticator=authenticator)
+        await self._save_session(session)
         terminal_success(f"سشن «{self.session_name}» با موفقیت و به‌صورت رمزگذاری‌شده ساخته شد.")
         return session
+
+    async def _prompt_session(self, *, input_func: Callable[[str], str], otp_input_func: Callable[[str], str], authenticator: OtpAuthenticator | None = None) -> Session:
+        if self._closed:
+            raise RuntimeError('This named session is closed')
+        owned_authenticator = None
+        if authenticator is None:
+            owned_authenticator = self._authenticator()
+            authenticator = owned_authenticator
+        acquired = False
+        try:
+            while not _TERMINAL_LOGIN_LOCK.acquire(blocking=False):
+                await asyncio.sleep(0.05)
+            acquired = True
+            terminal_info(f"ساخت سشن رمزگذاری‌شدهٔ «{self.session_name}»")
+            for attempt in range(3):
+                phone = await asyncio.to_thread(input_func, prompt_label('شماره روبیکا (09… یا +989…)'))
+                try:
+                    phone = validate_iranian_phone(phone)
+                    break
+                except ValueError:
+                    terminal_info('فرمت شماره معتبر نیست.')
+            else:
+                raise ValueError('A valid Iranian phone number is required')
+            try:
+                challenge_id = await authenticator.begin(phone)
+            except TwoStepRequiredError:
+                begin_with_password = getattr(authenticator, 'begin_with_password', None)
+                if begin_with_password is None:
+                    raise
+                for attempt in range(3):
+                    password = await asyncio.to_thread(otp_input_func, prompt_label('رمز دومرحله‌ای روبیکا'))
+                    try:
+                        challenge_id = await begin_with_password(phone, password)
+                        break
+                    except TwoStepRequiredError:
+                        terminal_info('رمز دومرحله‌ای پذیرفته نشد.')
+                else:
+                    raise TwoStepRequiredError('The existing two-step password was rejected')
+            terminal_info("کد تأیید ارسال شد؛ آن را بدون نمایش در ترمینال وارد کنید.")
+            for attempt in range(3):
+                code = await asyncio.to_thread(otp_input_func, prompt_label("کد تأیید"))
+                code = code.translate(str.maketrans('۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩', '01234567890123456789')).strip()
+                if not code:
+                    terminal_info('کد تأیید خالی است.')
+                    continue
+                try:
+                    return await authenticator.complete(challenge_id, code)
+                except InvalidCodeError:
+                    terminal_info('کد تأیید پذیرفته نشد؛ دوباره وارد کنید.')
+            raise InvalidCodeError('The verification code was rejected after three attempts')
+        finally:
+            try:
+                if owned_authenticator is not None:
+                    close = getattr(owned_authenticator, 'aclose', None)
+                    if close:
+                        await close()
+            finally:
+                if acquired:
+                    _TERMINAL_LOGIN_LOCK.release()
 
     def async_client(self) -> AsyncClient:
         """Return the low-level client for advanced integrations.
@@ -215,9 +351,14 @@ class Client:
 
         if self._closed:
             raise RuntimeError("This named session is closed and cannot be restarted")
-        if not self.has_session():
-            await self.login_interactive()
-        await self.async_client().start()
+        async with self._start_lock:
+            stored = self.store.load_secret('session')
+            expired = stored is not None and Session.from_dict(stored).is_expired
+            if stored is None or expired:
+                if not self.auto_login:
+                    raise SessionExpiredError('No valid session exists and automatic login is disabled')
+                await self.login_interactive()
+            await self.async_client().start()
 
     @property
     def messages(self) -> Any:
@@ -246,16 +387,24 @@ class Client:
     def on(self, event_type: str, handler: Callable[..., Any] | None = None) -> Any:
         """Register a durable event handler; accepts ``@client.on("message")``."""
 
-        return self.async_client().on(event_type, handler)
+        def register(callback):
+            self._handlers.append((event_type, callback))
+            if self._client is not None:
+                self._client.on(event_type, callback)
+            return callback
+        return register if handler is None else register(handler)
 
-    def events(self) -> AsyncIterator[Any]:
+    async def events(self) -> AsyncIterator[Any]:
         """Iterate durable deliveries and explicitly ``ack`` or ``nack`` each one."""
 
-        return self.async_client().events()
+        await self.start()
+        async for delivery in self.async_client().events():
+            yield delivery
 
     async def run(self, *, workers: int = 1) -> None:
         """Dispatch registered event handlers until cancelled or closed."""
 
+        await self.start()
         await self.async_client().run(workers=workers)
 
     async def wait_operation(self, operation_id: str, *, timeout: float | None = 30) -> Mapping[str, Any]:

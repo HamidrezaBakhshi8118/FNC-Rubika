@@ -1,32 +1,58 @@
-# fnc-rubika
+# fnc-rubika 0.2
 
-`fnc-rubika` is a private, clean-room Python foundation for an authorised
-Rubika session client.  Version `0.1` implements durable message operations,
-media hooks, encrypted local state, and at-least-once event delivery.
+Python 3.11?3.14 Rubika session client with terminal login, encrypted local
+sessions, durable message operations, synchronous and asynchronous APIs, and
+native HTTP/WebSocket transports.
 
-It deliberately contains no guessed Rubika endpoints. On the first
-`async with Client("session-name")`, it asks for a `+989…` phone number and OTP
-in the terminal, then stores only encrypted session material. Live login
-becomes available when the package ships a reviewed Rubika contract catalog
-produced from authorised documentation and a dedicated test account.
+The bundled catalog contains 205 RPC names found in the public Rubika web
+client plus six convenience aliases. Its provenance is recorded in the catalog.
+The adapter and login flow pass local protocol tests. Public DC discovery was
+also tested against the service. Account login, message delivery and all method
+schemas still need account integration testing; name coverage is not a claim
+that every method has been validated live.
 
-## Documentation
+```powershell
+python -m pip install .
+python -m fnc_rubika login personal
+python -m fnc_rubika methods
+```
 
-- [Persian quick start](docs/USER_GUIDE.fa.md)
-- [Complete Persian API reference](docs/API_REFERENCE.fa.md)
-- [Multi-session and security guide](docs/SESSIONS.fa.md)
-- [Endpoint / WebSocket catalog policy](docs/CONTRACT_CATALOG.fa.md)
-- [Offline HTML documentation](docs/site/index.html) (open this file locally)
-- [Maintainer guide](docs/README.fa.md)
+When the session is missing, locally expired or rejected by the provider,
+`Client` prompts for a phone number, OTP and, if required, the existing two-step
+password. OTPs and passwords are hidden and not stored. Session keys and the
+v6 signing key are encrypted locally.
 
-The normal async API is intentionally simple:
+```python
+import asyncio
+from fnc_rubika import Client
+
+async def main():
+    async with Client("personal") as client:
+        chats = await client.api.getChats()
+        print(chats)
+
+asyncio.run(main())
+```
 
 ```python
 from fnc_rubika import Client
 
-async with Client("personal") as client:
-    await client.messages.send("chat-id", "سلام")
+with Client("personal") as client:
+    chats = client.getChats()
 ```
 
-`Client("personal")` is already the session-aware client.  The lower-level
-`async_client()` method remains available only for advanced integrations.
+Use `auto_login=False` for unattended applications that must never prompt.
+A single process must own each named session store. After an ambiguous mutation
+or process crash, delivery becomes `unknown` instead of being retried blindly.
+The web protocol has no observed WebSocket resume token: update APIs are
+available for application backfill, but automatic gap recovery is not implemented.
+
+- [Persian usage guide](docs/USER_GUIDE.fa.md)
+- [Public web method catalog](docs/WEB_METHODS.fa.md)
+- [Protocol evidence and limits](docs/CONTRACT_CATALOG.fa.md)
+- [API reference](docs/API_REFERENCE.fa.md)
+- [Session guide](docs/SESSIONS.fa.md)
+- [Review and validation report](docs/REVIEW.fa.md)
+- [Offline HTML guide](docs/site/index.html)
+- [Async example](examples/async_client.py)
+- [Sync example](examples/sync_client.py)

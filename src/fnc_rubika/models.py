@@ -15,15 +15,30 @@ def utcnow() -> datetime:
 class Session:
     """Authenticated session material kept encrypted by the configured store."""
 
-    access_token: str
+    access_token: str = field(repr=False)
     device_id: str | None = None
     expires_at: datetime | None = None
+    private_key: str | None = field(default=None, repr=False)
+    api_version: str = "5"
+    account_id: str | None = None
+
+    @property
+    def is_expired(self) -> bool:
+        if self.expires_at is None:
+            return False
+        expiry = self.expires_at
+        if expiry.tzinfo is None:
+            expiry = expiry.replace(tzinfo=timezone.utc)
+        return expiry <= utcnow()
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "access_token": self.access_token,
             "device_id": self.device_id,
             "expires_at": self.expires_at.isoformat() if self.expires_at else None,
+            "private_key": self.private_key,
+            "api_version": self.api_version,
+            "account_id": self.account_id,
         }
 
     @classmethod
@@ -33,6 +48,9 @@ class Session:
             access_token=str(value["access_token"]),
             device_id=value.get("device_id"),
             expires_at=datetime.fromisoformat(expires_at) if expires_at else None,
+            private_key=value.get("private_key"),
+            api_version=str(value.get("api_version", "5")),
+            account_id=value.get("account_id"),
         )
 
 
@@ -134,4 +152,3 @@ class QueuedOperation:
     operation_id: str
     operation: str
     idempotency_key: str
-

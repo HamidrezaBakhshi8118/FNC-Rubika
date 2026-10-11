@@ -1,13 +1,10 @@
-# مرجع کامل API — fnc-rubika 0.1
+# مرجع کامل API — fnc-rubika 0.2
 
-این مرجع API عمومی نسخهٔ `0.1` است. همهٔ نمونه‌ها Python 3.11+ و `asyncio`
+این مرجع API عمومی نسخهٔ `0.2` است. همهٔ نمونه‌ها Python 3.11+ و `asyncio`
 هستند. نام distribution در pip برابر `fnc-rubika` و نام import برابر
 `fnc_rubika` است.
 
-> نکتهٔ صداقت فنی: متدهای پیام و رسانه API پایدار محلی هستند، اما فقط پس از
-> عرضهٔ catalog بازبینی‌شده به endpoint واقعی وصل می‌شوند. در catalog همراه این
-> repository هیچ endpoint واقعی حدس زده نشده است. وضعیت و روش تکمیل آن در
-> [راهنمای catalog](CONTRACT_CATALOG.fa.md) آمده است.
+> کاتالوگ عمومی وب و آداپتور native همراه بسته هستند. پوشش نام‌ها با تأیید عملکرد زنده همه متدها یکسان نیست. [شواهد و محدودیت‌ها](CONTRACT_CATALOG.fa.md) و [فهرست متدها](WEB_METHODS.fa.md) را ببینید.
 
 ## 1. Client — API پیشنهادی
 
@@ -28,6 +25,10 @@ Client(
     contract_path: str | Path | None = None,
     data_dir: str | Path | None = None,
     key_provider: KeyProvider | None = None,
+    auto_login: bool = True,
+    authenticator_factory=None,
+    input_func=input,
+    otp_input_func=getpass,
 )
 ```
 
@@ -48,7 +49,7 @@ Client(
 | `aclose` | `await client.aclose()` | receiver، outbox، HTTP و store را می‌بندد؛ idempotent است. کلاینت بسته restart نمی‌شود. |
 | `has_session` | `client.has_session()` | `bool`؛ تنها وجود سشن ذخیره‌شده را می‌سنجد، اعتبار آن در سرویس را نه. |
 | `session_name` | `client.session_name` | نام محلی immutable سشن. |
-| `session_expired` | `client.session_expired` | اگر provider سشن را رد کرده باشد `True` می‌شود؛ login خودکار انجام نمی‌شود. |
+| `session_expired` | `client.session_expired` | اگر provider سشن را رد کرده باشد `True` می‌شود؛ در auto_login پیش‌فرض ورود مجدد ترمینالی انجام می‌شود. |
 | `async_client` | `client.async_client()` | `AsyncClient` داخلی برای integration پیشرفته؛ در کد عادی به‌جای آن از خود `client` استفاده کنید. |
 
 ### ورود
@@ -133,6 +134,10 @@ SessionPool(
     contract_path: str | Path | None = None,
     data_dir: str | Path | None = None,
     key_provider: KeyProvider | None = None,
+    auto_login: bool = True,
+    authenticator_factory=None,
+    input_func=input,
+    otp_input_func=getpass,
 )
 ```
 
@@ -200,3 +205,7 @@ with SyncClient(async_client) as client:
 | `OperationUnknownError` | نتیجهٔ mutation مبهم و non-idempotent است؛ قبل از ارسال مجدد reconciliation کنید. |
 | `RemoteOperationError` | سرویس mutation را رد کرده است؛ payload/permission را بررسی کنید. |
 | `TransportError` | شبکه، frame یا قرارداد realtime مشکل دارد؛ client reconnect با backoff می‌کند. |
+
+## قابلیت‌های ۰.۲
+
+with Client رابط هم‌زمان و async with رابط ناهم‌زمان است. متدهای مستقیم مانند client.getChats و client.api.getChats در دسترس‌اند. auto_login=False prompt را غیرفعال می‌کند. RubikaTransport و RubikaOtpAuthenticator از ریشه پکیج export می‌شوند. Session فیلدهای private_key، api_version، account_id و ویژگی is_expired دارد. InvalidCodeError و TwoStepRequiredError در fnc_rubika.exceptions هستند. دانلود native به MediaRef یا descriptor واقعی فایل نیاز دارد. کلیدهای ذخیره‌شده در repr نمایش داده نمی‌شوند.

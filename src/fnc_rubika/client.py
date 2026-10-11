@@ -51,6 +51,7 @@ class AsyncClient:
         reconnect_base_seconds: float = 0.5,
         reconnect_max_seconds: float = 30,
         event_lease_seconds: float = 60,
+        reauthenticate: Callable[[], Awaitable[Transport]] | None = None,
     ) -> None:
         self.transport = transport
         self.store = store
@@ -69,6 +70,9 @@ class AsyncClient:
         self._messages: Any | None = None
         self._media: Any | None = None
         self._api: Any | None = None
+        self._reauthenticate = reauthenticate
+        self._auth_lock = asyncio.Lock()
+        self._start_lock = asyncio.Lock()
 
     async def __aenter__(self) -> "AsyncClient":
         await self.start()
@@ -138,11 +142,68 @@ class AsyncClient:
     async def start(self) -> None:
         if self._closed:
             raise ClientClosedError("The client is closed")
-        if self._started:
-            return
-        self._started = True
-        self._receiver_task = asyncio.create_task(self._receive_loop(), name="fnc-rubika-receiver")
-        self._outbox_task = asyncio.create_task(self._outbox_loop(), name="fnc-rubika-outbox")
+        async with self._start_lock:
+            if self._started:
+                return
+            prepare = getattr(self.transport, 'prepare', None)
+            if prepare is not None:
+                try:
+                    await prepare()
+                except SessionExpiredError as exc:
+                    await self._recover_session(self.transport, exc)
+                    await self.transport.prepare()
+            self._started = True
+            self._receiver_task = asyncio.create_task(self._receive_loop(), name="fnc-rubika-receiver")
+            self._outbox_task = asyncio.create_task(self._outbox_loop(), name="fnc-rubika-outbox")
+
+    async def _recover_session(self, rejected: Transport, error: SessionExpiredError) -> None:
+        async with self._auth_lock:
+            if self._closed:
+                raise ClientClosedError('The client is closed')
+            if self.transport is not rejected:
+                return
+            if self._reauthenticate is None:
+                self._fatal_error = error
+                self._inbox_changed.set()
+                self._outbox_changed.set()
+                raise error
+            try:
+                replacement = await self._reauthenticate()
+                if self._closed:
+                    await replacement.aclose()
+                    raise ClientClosedError('The client is closed')
+                self.transport = replacement
+                self._fatal_error = None
+                await rejected.aclose()
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                self._fatal_error = error
+                self._inbox_changed.set()
+                self._outbox_changed.set()
+                raise error from None
+
+    async def replace_transport(self, replacement: Transport) -> None:
+        async with self._auth_lock:
+            previous = self.transport
+            self.transport = replacement
+            self._fatal_error = None
+            await previous.aclose()
+            if self._started and self._receiver_task is not None and self._receiver_task.done():
+                self._receiver_task = asyncio.create_task(self._receive_loop(), name='fnc-rubika-receiver')
+            self._inbox_changed.set()
+            self._outbox_changed.set()
+
+    async def _request(self, operation: str, payload: Mapping[str, Any], *, idempotency_key: str) -> Mapping[str, Any]:
+        # Readers, receiver and outbox share one renewal. Retry only a definitive
+        # authentication rejection; ambiguous mutations retain unknown status.
+        async with self._auth_lock:
+            transport = self.transport
+        try:
+            return await transport.request(operation, payload, idempotency_key=idempotency_key)
+        except SessionExpiredError as exc:
+            await self._recover_session(transport, exc)
+            return await self.transport.request(operation, payload, idempotency_key=idempotency_key)
 
     async def aclose(self) -> None:
         if self._closed:
@@ -151,7 +212,8 @@ class AsyncClient:
         self._stop.set()
         self._inbox_changed.set()
         self._outbox_changed.set()
-        tasks = [task for task in (self._receiver_task, self._outbox_task) if task]
+        current = asyncio.current_task()
+        tasks = [task for task in (self._receiver_task, self._outbox_task) if task and task is not current]
         for task in tasks:
             task.cancel()
         if tasks:
@@ -161,23 +223,25 @@ class AsyncClient:
     async def _receive_loop(self) -> None:
         attempt = 0
         while not self._stop.is_set():
+            transport = self.transport
             try:
                 cursor = self.store.get_cursor()
                 saw_frame = False
-                async for raw_event in self.transport.stream_events(cursor):
+                async for raw_event in transport.stream_events(cursor):
                     saw_frame = True
                     event = self._normalize_event(raw_event)
                     if self.store.record_event(event):
                         self._inbox_changed.set()
                     if self._stop.is_set():
                         return
+                    attempt = 0
                 if not self._stop.is_set():
                     raise TransportError("The realtime stream ended")
             except SessionExpiredError as exc:
-                self._fatal_error = exc
-                self._inbox_changed.set()
-                self._outbox_changed.set()
-                return
+                try:
+                    await self._recover_session(transport, exc)
+                except SessionExpiredError:
+                    return
             except asyncio.CancelledError:
                 raise
             except TransportError:
@@ -283,6 +347,10 @@ class AsyncClient:
     async def wait_operation(self, operation_id: str, *, timeout: float | None = 30) -> Mapping[str, Any]:
         async def wait_for_terminal_state() -> Mapping[str, Any]:
             while True:
+                if self._fatal_error is not None:
+                    raise self._fatal_error
+                if self._closed:
+                    raise ClientClosedError('The client is closed')
                 state = self.store.operation_state(operation_id)
                 if state is None:
                     raise KeyError(f"Unknown operation {operation_id}")
@@ -318,14 +386,15 @@ class AsyncClient:
                 continue
             operation_id = str(operation["operation_id"])
             try:
-                result = await self.transport.request(
+                result = await self._request(
                     str(operation["operation"]),
                     operation["payload"],
                     idempotency_key=str(operation["idempotency_key"]),
                 )
             except SessionExpiredError as exc:
-                self.store.fail_operation(operation_id, error=str(exc))
+                self.store.retry_operation(operation_id, delay_seconds=0, error=str(exc))
                 self._fatal_error = exc
+                self._inbox_changed.set()
             except RateLimitError as exc:
                 self.store.retry_operation(operation_id, delay_seconds=exc.retry_after or self._retry_delay(operation), error=str(exc))
             except AmbiguousDeliveryError as exc:
@@ -333,7 +402,7 @@ class AsyncClient:
                     self.store.retry_operation(operation_id, delay_seconds=self._retry_delay(operation), error=str(exc))
                 else:
                     self.store.fail_operation(operation_id, error=str(exc), unknown=True)
-            except RemoteOperationError as exc:
+            except (RemoteOperationError, ContractError, ValueError, TypeError, OSError) as exc:
                 self.store.fail_operation(operation_id, error=str(exc))
             except TransportError as exc:
                 self.store.retry_operation(operation_id, delay_seconds=self._retry_delay(operation), error=str(exc))
@@ -361,4 +430,4 @@ class AsyncClient:
         # Read endpoints should have no side effects; the random key is ignored unless their contract opts in.
         from uuid import uuid4
 
-        return await self.transport.request(operation, payload, idempotency_key=str(uuid4()))
+        return await self._request(operation, payload, idempotency_key=str(uuid4()))

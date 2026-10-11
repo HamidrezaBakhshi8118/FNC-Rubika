@@ -1,136 +1,96 @@
-# راهنمای کاربر fnc-rubika
+# راهنمای fnc-rubika 0.2
 
-## هدف
+کاتالوگ عمومی وب روبیکا و آداپتور اختصاصی HTTP و WebSocket همراه بسته هستند.
+تست‌های محلی و کشف عمومی سرورها پاس شده‌اند. ورود حساب، ارسال پیام و تمام
+schemaها هنوز نیازمند تأیید عملی روی حساب هستند.
 
-برای ساخت سشن لازم نیست endpoint، token، شماره یا OTP را در برنامه hard-code کنید. هر حساب فقط یک نام محلی دارد و اطلاعات حساس آن به‌صورت رمزگذاری‌شده روی همان دستگاه نگهداری می‌شود.
+## نصب و ورود
 
-## نصب
+در پوشه پروژه اجرا کنید:
 
 ```powershell
-py -3.14 -m pip install .
+python -m pip install .
+python -m fnc_rubika login personal
+python -m fnc_rubika methods
 ```
 
-Python 3.11 تا 3.14 پشتیبانی می‌شود. نصب عادی شامل keyring سیستم‌عامل است؛ بنابراین کلید رمزگذاری از سیستم‌عامل گرفته می‌شود و در پروژه ذخیره نمی‌شود.
+در نبود سشن، انقضای محلی یا رد شدن سشن توسط سرویس، شماره و کد در ترمینال
+پرسیده می‌شوند. شماره‌های `09…`، `989…`، `+989…` و `00989…` و ارقام فارسی
+پذیرفته می‌شوند. کد و رمز دومرحله‌ای موجود با getpass خوانده می‌شوند؛ در
+ترمینال واقعی اجرا کنید تا ورودی پنهان بماند. تا سه تلاش برای شماره، رمز و
+کد نامعتبر مجاز است. برای کد منقضی‌شده، دستور ورود را دوباره اجرا کنید.
 
-## ساخت خودکار سشن در نخستین استفاده
+سشن پیش‌فرض در `%LOCALAPPDATA%\fnc-rubika` ذخیره می‌شود. auth و کلید خصوصی
+نسخه ۶ در SQLite با AES-GCM رمزگذاری می‌شوند؛ کلید ذخیره‌سازی در keyring
+سیستم است. OTP و رمز دومرحله‌ای ذخیره نمی‌شوند. شناسه حساب برای جلوگیری از
+اجرای صف حساب قبلی روی حساب دیگر ذخیره می‌شود. برای حساب دیگر نام سشن جدید
+انتخاب کنید. هر فایل سشن در هر لحظه باید متعلق به یک پردازش باشد.
 
-برای login هیچ دستور CLI جداگانه‌ای وجود ندارد. کافی است برنامه را به شکل
-معمول اجرا کنید؛ اگر سشن `personal` قبلاً وجود نداشته باشد، خود context manager
-در همان ترمینال شماره و سپس کد را می‌پرسد. labelهای غیرحساس با
-`chroma-term-console` رنگی نمایش داده می‌شوند و OTP با `getpass` بدون echo
-گرفته می‌شود:
+## کلاینت ناهم‌زمان
+
+```python
+import asyncio
+from fnc_rubika import Client
+
+async def main():
+    client = Client("personal")
+
+    @client.on("message")
+    async def on_message(_, delivery):
+        print(delivery.event.event_id)
+
+    async with client:
+        chats = await client.getChats()
+        # معادل: await client.api.getChats()
+        await client.run()
+
+asyncio.run(main())
+```
+
+ثبت هندلر قبل از ورود مجاز است. ورود مجدد، هندلرها و صف را حفظ می‌کند.
+خطاهای هم‌زمان HTTP و WebSocket فقط یک prompt ایجاد می‌کنند. promptهای ورود
+چند سشن نیز با یکدیگر تداخل ندارند. `Client(..., auto_login=False)` برای
+برنامه بدون ورودی انسانی است و در نبود سشن معتبر SessionExpiredError می‌دهد.
+
+## کلاینت هم‌زمان
 
 ```python
 from fnc_rubika import Client
 
-async with Client("personal") as client:
-    await client.messages.send("chat-id", "سلام")
+with Client("personal") as client:
+    chats = client.api.getChats()
 ```
 
-```text
-ساخت سشن رمزگذاری‌شدهٔ «personal»
-شماره روبیکا را با فرمت +989XXXXXXXXX وارد کنید: +989123456789
-کد تأیید ارسال شد؛ آن را بدون نمایش در ترمینال وارد کنید.
-کد تأیید: ******
-سشن «personal» با موفقیت و به‌صورت رمزگذاری‌شده ساخته شد.
-```
-
-- شماره باید دقیقاً با `+989` آغاز شود؛ شکل‌هایی مثل `0912…` یا `989…` پذیرفته نمی‌شوند تا کشور و فرمت مبهم نباشد.
-- `personal` صرفاً نام سشن محلی است. برای حساب‌های دیگر، مثلاً `business` یا `test`, نام دیگری انتخاب کنید.
-- شماره، OTP، token، cookie و device-id در log چاپ نمی‌شوند و OTP در فایل سشن ذخیره نمی‌شود.
-- فایل رمزگذاری‌شدهٔ سشن در مسیر دادهٔ برنامه (`%LOCALAPPDATA%\fnc-rubika` در ویندوز) قرار می‌گیرد، نه در پوشهٔ repository.
-
-## استفاده در Python
-
-پس از یک‌بار login، فقط نام سشن لازم است:
-
-```python
-from fnc_rubika import Client
-
-async with Client("personal") as client:
-    sent = await client.messages.send("chat-id", "سلام")
-```
-
-`Client("personal")` خودش کلاینت سشنی است؛ در کاربرد عادی نیازی به
-`async_client()` ندارید. آن متد فقط برای integrationهای سطح پایین باقی مانده
-است. برای چند حساب هم‌زمان، از `SessionPool` استفاده کنید؛ راهنمای کامل در
-[SESSIONS.fa.md](SESSIONS.fa.md) است.
-
-اگر می‌خواهید ورود را پیش از شروع کار انجام دهید، می‌توانید همان flow را
-مستقیم صدا بزنید؛ شماره و code همچنان در source قرار نمی‌گیرند:
-
-```python
-from fnc_rubika import Client
-
-client = Client("personal")
-try:
-    await client.login_interactive()
-finally:
-    await client.aclose()
-```
-
-## همهٔ APIها بدون hard-code
-
-`fnc-rubika` دو سطح API دارد:
-
-1. APIهای typed و پایدار برای مسیرهای پرکاربرد: `messages.send`, `reply`, `edit`, `delete`, `forward`, `history` و `media.upload/download`.
-2. `client.api` که هر operation موجود در catalog بازبینی‌شده را خودکار در اختیار می‌گذارد. اگر catalog شامل `chats.get_info` باشد، همان لحظه این فراخوانی بدون افزودن route به برنامهٔ مصرف‌کننده قابل استفاده است:
+## پیام و رسانه
 
 ```python
 async with Client("personal") as client:
-    result = await client.api.chats.get_info(chat_id="chat-id")
+    sent = await client.messages.send("object-guid", "سلام")
+    history = await client.messages.history("object-guid", limit=20)
+    media = await client.media.upload("photo.jpg")
+    await client.media.download(media, "downloaded.jpg")
 ```
 
-برای operationهای تغییردهنده، catalog مشخص می‌کند که درخواست باید از outbox پایدار و idempotency عبور کند. برای خواندن، همان catalog روش HTTP، schema، pagination و خطاها را تعیین می‌کند. به این ترتیب با کامل‌شدن catalog مجاز، همهٔ APIها قابل دسترسی‌اند و کاربر endpoint یا payload transport را hard-code نمی‌کند.
+شناسه گفت‌وگو همان object_guid روبیکا است. دانلود به MediaRef یا descriptor
+شامل `file_id`، `access_hash_rec`، `dc_id` و `size` نیاز دارد؛ شناسه تنها کافی
+نیست. برای فایل دریافتی از `file_inline` واقعی استفاده کنید. فایل محلی آپلود
+تا پایان صف باید باقی بماند.
 
-## دریافت پایدار پیام
+## متدها و دریافت
 
-```python
-async with Client("personal") as client:
-    async for delivery in client.events():
-        try:
-            await save_to_database(delivery.event)
-        except Exception:
-            await delivery.nack()
-        else:
-            await delivery.ack()
-```
+۲۰۵ نام RPC و ۶ alias در کاتالوگ هستند؛ فهرست در [WEB_METHODS.fa.md](WEB_METHODS.fa.md)
+آمده است. نام‌های واقعی مانند `client.api.getUserInfo(user_guid="...")` قابل
+فراخوانی‌اند. پارامترها، نام‌های واقعی سرویس هستند و کلیدهای جدول schema کامل
+نیستند. `getSelection` و `searchSelection` به `dc_url` واقعی بازگردانده‌شده
+از سرویس نیاز دارند. `handShake` مخصوص WebSocket است.
 
-دریافت `at-least-once` است: event ابتدا در inbox رمزگذاری‌شده ثبت می‌شود؛ سپس تحویل داده می‌شود؛ و cursor فقط بعد از `ack` جلو می‌رود. بنابراین handler باید از شناسهٔ event برای جلوگیری از اثر تکراری استفاده کند.
+سرورها با getDCs کشف می‌شوند. اتصال WebSocket handshake و heartbeat دارد و
+batchهای messenger را رمزگشایی می‌کند. رویدادهای دریافت‌شده پیش از تحویل در
+SQLite نگهداری می‌شوند. پروتکل وب مشاهده‌شده resume token ندارد؛ بازیابی
+خودکار شکاف رویدادها پیاده نشده است. برای backfill از getChatsUpdates و
+getMessagesUpdates با state واقعی برنامه استفاده کنید.
 
-## ارسال و محدودیت سرویس
-
-پیام‌های خروجی ابتدا در outbox رمزگذاری‌شده ثبت می‌شوند. قطع اتصال، timeout و `Retry-After` باعث از دست رفتن کار نمی‌شوند. تکرار خودکار فقط برای endpointهایی اتفاق می‌افتد که catalog آن‌ها را idempotent اعلام کرده باشد؛ در غیر این صورت وضعیت `unknown` برمی‌گردد تا پیام تکراری ایجاد نشود.
-
-کتابخانه محدودیت‌های Rubika و anti-abuse را دور نمی‌زند. ظرفیت صف و retry قابل تنظیم‌اند، اما quota و rate limit سرویس معتبر می‌مانند.
-
-## وضعیت catalog Rubika
-
-فایل همراه بسته در این commit یک placeholder امن است، نه قرارداد زنده. این تصمیم عمدی است: بدون مستندات تأییدشده و حساب تست مجاز، قرار دادن endpoint یا WebSocket حدسی می‌تواند باعث از کار افتادن login یا افشای داده شود.
-
-برای فعال‌شدن login واقعی و پوشش کامل API، maintainers باید catalog رسمی و بازبینی‌شدهٔ Rubika را با این اجزا منتشر کنند:
-
-- تمام endpointها: نام operation، HTTP method/path، schema، خطا، pagination و idempotency.
-- قرارداد OTP: operation ارسال کد، operation تأیید کد و field mapping پاسخ session.
-- قرارداد WebSocket: URL، auth، heartbeat، event id/type/payload/cursor و resume.
-- fixtureهای کاملاً redact‌شده و تست integration با حساب آزمایشی جدا.
-
-پس از انتشار catalog معتبر در خود package، ورود نخست در همان
-`async with Client("personal")` بدون فایل پیکربندی یا کدنویسی اضافه برای کاربر کار خواهد کرد.
-
-## خطاهای رایج
-
-| پیام | علت و اقدام |
-| --- | --- |
-| `Phone number must use ...` | شماره را مانند `+989123456789` وارد کنید. |
-| `no reviewed OTP authentication contract` | نسخهٔ نصب‌شده catalog زنده ندارد؛ نسخهٔ دارای catalog تأییدشده را نصب کنید. |
-| سشن وجود ندارد | ورود به `async with Client("session-name")` به‌صورت خودکار شماره و OTP را می‌پرسد. |
-| `SessionExpiredError` | سیستم خودکار OTP دریافت نمی‌کند. یک `Client` جدید با همان نام بسازید و `await client.login_interactive()` را صدا بزنید تا سشن رمزگذاری‌شده جایگزین شود. |
-| `unknown` در outbox | پاسخ ارسال مبهم بوده و endpoint idempotent نیست؛ قبل از ارسال مجدد نتیجه را بررسی کنید. |
-
-## امنیت
-
-- پوشهٔ سشن، `*.sqlite3` و `*.salt` را هرگز commit نکنید.
-- OTP یا token را برای پشتیبانی ارسال نکنید.
-- برای تست، از حساب و گفت‌وگوی غیرشخصی استفاده کنید.
-- catalogها و fixtureها را پیش از commit از شماره، متن پیام، URL رسانه، token، cookie و device-id پاک‌سازی کنید.
+ارسال مبهم دوباره انجام نمی‌شود، چون تضمین deduplication سرویس تأیید نشده
+است. پس از crash نیز عملیات در حال ارسال به unknown تبدیل می‌شوند و نیاز به
+بررسی نتیجه در سمت برنامه دارند. WebRTC تماس صوتی پیاده نشده است؛ نام‌های
+RPC مدیریت voice chat در کاتالوگ موجودند.

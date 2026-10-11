@@ -1,11 +1,3540 @@
 {
-  "version": "unconfigured",
-  "base_url": "https://replace-with-reviewed-base-url.example",
-  "endpoints": [],
+  "version": "rubika-web-4.4.34",
+  "protocol": "rubika",
+  "base_url": "https://messengerg2c1.iranlms.ir",
+  "provider": {
+    "dc_url": "https://getdcmess.iranlms.ir/",
+    "socket_url": "wss://jsocket5.iranlms.ir:80",
+    "app_version": "4.4.34",
+    "bot_url": "https://messengerg2c1.iranlms.ir",
+    "rubino_url": "https://rubino1.iranlms.ir/",
+    "source_sha256": "47b302b9166ed8c9138f9d959e9107c53dcb78c9447f8281715f657b68080acb",
+    "source_url": "https://web.rubika.ir/main-es2015.6421623571994c9dd619.js",
+    "observed_date": "2026-10-11",
+    "validation": "source-only",
+    "rpc_method_count": 205
+  },
+  "endpoints": [
+    {
+      "operation": "abortSetRecoveryEmail",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "abortSetRecoveryEmail",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2718241,
+        "input_fields_observed": [
+          "password"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "abortTwoStepSetup",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "abortTwoStepSetup",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2717886,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "actionOnJoinRequest",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "actionOnJoinRequest",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 3332159,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "actionOnMessageReaction",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "actionOnMessageReaction",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2121192,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "actionOnStickerSet",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "actionOnStickerSet",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2119341,
+        "input_fields_observed": [
+          "action",
+          "sticker_set_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "actionOnUnconfirmedSession",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "actionOnUnconfirmedSession",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2588500,
+        "input_fields_observed": [
+          "action",
+          "unconfirmed_session_key"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "addAddressBook",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "addAddressBook",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1806423,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "addChannel",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "addChannel",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1866243,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "addChannelMembers",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "addChannelMembers",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1865867,
+        "input_fields_observed": [
+          "channel_guid",
+          "member_guids"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "addFolder",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "addFolder",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2068731,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "addGroup",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "addGroup",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1856502,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "addGroupMembers",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "addGroupMembers",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1856902,
+        "input_fields_observed": [
+          "group_guid",
+          "member_guids"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "addLiveComment",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "addLiveComment",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2367491,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "addSetWallpaper",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "addSetWallpaper",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2587340,
+        "input_fields_observed": [
+          "main_file_id",
+          "thumbnail_file_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "addToMyGifSet",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "addToMyGifSet",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2118255,
+        "input_fields_observed": [
+          "message_id",
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "banChannelMember",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "banChannelMember",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1866658,
+        "input_fields_observed": [
+          "action",
+          "channel_guid",
+          "member_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "banGroupMember",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "banGroupMember",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1857345,
+        "input_fields_observed": [
+          "action",
+          "group_guid",
+          "member_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "cancelChangeObjectOwner",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "cancelChangeObjectOwner",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1860890,
+        "input_fields_observed": [
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "changePassword",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "changePassword",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2718594,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "channelPreviewByJoinLink",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "channelPreviewByJoinLink",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1868263,
+        "input_fields_observed": [
+          "hash_link"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "checkChannelUsername",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "checkChannelUsername",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1868580,
+        "input_fields_observed": [
+          "username"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "checkTwoStepPasscode",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "checkTwoStepPasscode",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2717114,
+        "input_fields_observed": [
+          "password"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "checkUserUsername",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "checkUserUsername",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1834214,
+        "input_fields_observed": [
+          "username"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "clearDrafts",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "clearDrafts",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1823098,
+        "input_fields_observed": [
+          "action",
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "clickMessageUrl",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "clickMessageUrl",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1791603,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "createGroupVoiceChat",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "createGroupVoiceChat",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1839092,
+        "input_fields_observed": [
+          "chat_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "createJoinLink",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "createJoinLink",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 3331723,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "createPoll",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "createPoll",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2352488,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "deleteAvatar",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "deleteAvatar",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1815294,
+        "input_fields_observed": [
+          "avatar_id",
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "deleteBotChat",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "deleteBotChat",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1822571,
+        "input_fields_observed": [
+          "bot_guid",
+          "last_deleted_message_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "deleteChatHistory",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "deleteChatHistory",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1818701,
+        "input_fields_observed": [
+          "last_message_id",
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "deleteContact",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "deleteContact",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1806727,
+        "input_fields_observed": [
+          "user_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "deleteFolder",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "deleteFolder",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2068404,
+        "input_fields_observed": [
+          "folder_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "deleteMessages",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "deleteMessages",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1792066,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "deleteNoAccessGroupChat",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "deleteNoAccessGroupChat",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1858433,
+        "input_fields_observed": [
+          "group_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "deleteRevokedJoinLink",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "deleteRevokedJoinLink",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 3331527,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "deleteServiceChat",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "deleteServiceChat",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1867305,
+        "input_fields_observed": [
+          "last_deleted_message_id",
+          "service_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "deleteUserChat",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "deleteUserChat",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1819014,
+        "input_fields_observed": [
+          "last_deleted_message_id",
+          "user_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "discardGroupVoiceChat",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "discardGroupVoiceChat",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1840788,
+        "input_fields_observed": [
+          "chat_guid",
+          "voice_chat_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "editChannelInfo",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "editChannelInfo",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1865465,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "editFolder",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "editFolder",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2069064,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "editGroupInfo",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "editGroupInfo",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1856103,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "editJoinLink",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "editJoinLink",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 3331805,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "editMessage",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "editMessage",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1790971,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "forwardMessages",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "forwardMessages",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1790173,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getAbsObjects",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getAbsObjects",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1776524,
+        "input_fields_observed": [
+          "objects_guids"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getAllDrafts",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getAllDrafts",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1823373,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getAppearanceSetting",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getAppearanceSetting",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2586771,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getAvailableReactions",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getAvailableReactions",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2120506,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getAvatars",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getAvatars",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1815698,
+        "input_fields_observed": [
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getBannedChannelMembers",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getBannedChannelMembers",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1870441,
+        "input_fields_observed": [
+          "channel_guid",
+          "search_text",
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getBannedGroupMembers",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getBannedGroupMembers",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1859548,
+        "input_fields_observed": [
+          "group_guid",
+          "search_text",
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getBarcodeAction",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getBarcodeAction",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "plain",
+      "evidence": {
+        "offset": 2212182,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      },
+      "target_url": "https://barcode.iranlms.ir/",
+      "api_version": "0"
+    },
+    {
+      "operation": "getBaseInfo",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getBaseInfo",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "service",
+      "evidence": {
+        "offset": 1771073,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      },
+      "target_url": "https://servicesbase.iranlms.ir/",
+      "api_version": "0"
+    },
+    {
+      "operation": "getBlockedUsers",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getBlockedUsers",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2719762,
+        "input_fields_observed": [
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getBotInfo",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getBotInfo",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1862455,
+        "input_fields_observed": [
+          "bot_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getChannelAdminAccessList",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getChannelAdminAccessList",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1870203,
+        "input_fields_observed": [
+          "channel_guid",
+          "member_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getChannelAdminMembers",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getChannelAdminMembers",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1869069,
+        "input_fields_observed": [
+          "channel_guid",
+          "search_text",
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getChannelAllMembers",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getChannelAllMembers",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1868838,
+        "input_fields_observed": [
+          "channel_guid",
+          "search_text",
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getChannelInfo",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getChannelInfo",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1865177,
+        "input_fields_observed": [
+          "channel_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getChannelLink",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getChannelLink",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1869564,
+        "input_fields_observed": [
+          "channel_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getChatAds",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getChatAds",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2365411,
+        "input_fields_observed": [
+          "state"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getChatReaction",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getChatReaction",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2121515,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getChats",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getChats",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1825112,
+        "input_fields_observed": [
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getChatsByID",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getChatsByID",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1824194,
+        "input_fields_observed": [
+          "object_guids"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getChatsUpdates",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getChatsUpdates",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1826519,
+        "input_fields_observed": [
+          "state"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getCommonGroups",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getCommonGroups",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1860487,
+        "input_fields_observed": [
+          "user_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getContacts",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getContacts",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1808256,
+        "input_fields_observed": [
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getContactsLastOnline",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getContactsLastOnline",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1810195,
+        "input_fields_observed": [
+          "user_guids"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getContactsUpdates",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getContactsUpdates",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1808932,
+        "input_fields_observed": [
+          "state"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getDCs",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getDCs",
+      "auth": false,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "plain",
+      "evidence": {
+        "offset": 1770725,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      },
+      "target_url": "https://getdcmess.iranlms.ir/",
+      "api_version": "4"
+    },
+    {
+      "operation": "getDisplayAsInGroupVoiceChat",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getDisplayAsInGroupVoiceChat",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1850298,
+        "input_fields_observed": [
+          "chat_guid",
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getFolders",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getFolders",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2069657,
+        "input_fields_observed": [
+          "last_state"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getGroupAdminAccessList",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getGroupAdminAccessList",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1860026,
+        "input_fields_observed": [
+          "group_guid",
+          "member_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getGroupAdminMembers",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getGroupAdminMembers",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1859794,
+        "input_fields_observed": [
+          "group_guid",
+          "search_text",
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getGroupAllMembers",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getGroupAllMembers",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1855424,
+        "input_fields_observed": [
+          "group_guid",
+          "search_text",
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getGroupDefaultAccess",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getGroupDefaultAccess",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1855676,
+        "input_fields_observed": [
+          "group_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getGroupInfo",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getGroupInfo",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1854598,
+        "input_fields_observed": [
+          "group_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getGroupLink",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getGroupLink",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1854978,
+        "input_fields_observed": [
+          "group_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getGroupMentionList",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getGroupMentionList",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1859360,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getGroupMessageReadParticipants",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getGroupMessageReadParticipants",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1861806,
+        "input_fields_observed": [
+          "group_guid",
+          "message_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getGroupOnlineCount",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getGroupOnlineCount",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1861593,
+        "input_fields_observed": [
+          "group_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getGroupVoiceChat",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getGroupVoiceChat",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1838582,
+        "input_fields_observed": [
+          "chat_guid",
+          "voice_chat_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getGroupVoiceChatParticipants",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getGroupVoiceChatParticipants",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1851417,
+        "input_fields_observed": [
+          "chat_guid",
+          "start_id",
+          "voice_chat_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getGroupVoiceChatParticipantsByObjectGuids",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getGroupVoiceChatParticipantsByObjectGuids",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1846861,
+        "input_fields_observed": [
+          "chat_guid",
+          "object_guids",
+          "voice_chat_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getGroupVoiceChatUpdates",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getGroupVoiceChatUpdates",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1841736,
+        "input_fields_observed": [
+          "chat_guid",
+          "state",
+          "voice_chat_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getJoinLinkUserJoined",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getJoinLinkUserJoined",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 3332632,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getJoinLinks",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getJoinLinks",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 3331117,
+        "input_fields_observed": [
+          "creator_guid",
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getJoinRequests",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getJoinRequests",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 3331978,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getLandingPage",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getLandingPage",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "service",
+      "evidence": {
+        "offset": 2212820,
+        "input_fields_observed": [
+          "address"
+        ],
+        "validation": "source-only"
+      },
+      "target_url": "https://services.iranlms.ir",
+      "api_version": "0"
+    },
+    {
+      "operation": "getLinkFromAppUrl",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getLinkFromAppUrl",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2213231,
+        "input_fields_observed": [
+          "app_url"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getLiveComments",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getLiveComments",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2367666,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getLivePlayUrl",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getLivePlayUrl",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2366110,
+        "input_fields_observed": [
+          "access_token",
+          "live_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getLiveStatus",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getLiveStatus",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2366315,
+        "input_fields_observed": [
+          "access_token",
+          "live_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getLiveViewers",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getLiveViewers",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2366588,
+        "input_fields_observed": [
+          "live_id",
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getMapView",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getMapView",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2127135,
+        "input_fields_observed": [
+          "location"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getMessageReactions",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getMessageReactions",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2121689,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getMessageShareUrl",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getMessageShareUrl",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1822857,
+        "input_fields_observed": [
+          "message_id",
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getMessages",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getMessages",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1802034,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getMessagesByID",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getMessagesByID",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1794586,
+        "input_fields_observed": [
+          "message_ids",
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getMessagesInterval",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getMessagesInterval",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1800193,
+        "input_fields_observed": [
+          "filter_type",
+          "middle_message_id",
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getMessagesUpdates",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getMessagesUpdates",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1788858,
+        "input_fields_observed": [
+          "object_guid",
+          "state"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getMyArchivedStickerSets",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getMyArchivedStickerSets",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2122237,
+        "input_fields_observed": [
+          "search_text",
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getMyGifSet",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getMyGifSet",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2118054,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getMySessions",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getMySessions",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2585917,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getMyStickerSets",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getMyStickerSets",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2117619,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getObjectByUsername",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getObjectByUsername",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1819337,
+        "input_fields_observed": [
+          "username"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getPaymentInfo",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getPaymentInfo",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1863470,
+        "input_fields_observed": [
+          "payment_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getPendingObjectOwner",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getPendingObjectOwner",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1861094,
+        "input_fields_observed": [
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getPollOptionVoters",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getPollOptionVoters",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2352273,
+        "input_fields_observed": [
+          "poll_id",
+          "selection_index",
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getPollStatus",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getPollStatus",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2352012,
+        "input_fields_observed": [
+          "poll_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getPrivacySetting",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getPrivacySetting",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2716627,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getProfileLinkItems",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getProfileLinkItems",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2213429,
+        "input_fields_observed": [
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getProfilePosts",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getProfilePosts",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "rubino",
+      "wire_mode": "service",
+      "evidence": {
+        "offset": 1942013,
+        "input_fields_observed": [
+          "equal",
+          "limit",
+          "max_id",
+          "min_id",
+          "sort",
+          "target_profile_id"
+        ],
+        "validation": "source-only"
+      },
+      "api_version": "0"
+    },
+    {
+      "operation": "getProfilesStoryList",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getProfilesStoryList",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "rubino",
+      "wire_mode": "service",
+      "evidence": {
+        "offset": 1942496,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      },
+      "api_version": "0"
+    },
+    {
+      "operation": "getRelatedObjects",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getRelatedObjects",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1799972,
+        "input_fields_observed": [
+          "object_guid",
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getSelection",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getSelection",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "bot",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1864109,
+        "input_fields_observed": [
+          "bot_guid",
+          "selection_id",
+          "start_id"
+        ],
+        "validation": "source-only"
+      },
+      "target_url_field": "dc_url"
+    },
+    {
+      "operation": "getServiceInfo",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getServiceInfo",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1862879,
+        "input_fields_observed": [
+          "service_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getStickerSetByID",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getStickerSetByID",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2119049,
+        "input_fields_observed": [
+          "sticker_set_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getStickerSetting",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getStickerSetting",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2122448,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getStickersByEmoji",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getStickersByEmoji",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2119611,
+        "input_fields_observed": [
+          "emoji_character",
+          "suggest_by"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getStickersBySetIDs",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getStickersBySetIDs",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2119963,
+        "input_fields_observed": [
+          "sticker_set_ids"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getSuggestedFolders",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getSuggestedFolders",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2070214,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getTime",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getTime",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1784558,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getTranscription",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getTranscription",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1850812,
+        "input_fields_observed": [
+          "message_id",
+          "transcription_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getTrendStickerSets",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getTrendStickerSets",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2118723,
+        "input_fields_observed": [
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getTwoPasscodeStatus",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getTwoPasscodeStatus",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2716921,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getUnconfirmedSessions",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getUnconfirmedSessions",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2588290,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getUserInfo",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getUserInfo",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1835538,
+        "input_fields_observed": [
+          "user_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getUserSetting",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getUserSetting",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1833759,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getWalletTransferMessage",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getWalletTransferMessage",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2514420,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getWallpapers",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getWallpapers",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2586492,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "getWebAppFunction",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getWebAppFunction",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "plain",
+      "evidence": {
+        "offset": 2212555,
+        "input_fields_observed": [
+          "app_id"
+        ],
+        "validation": "source-only"
+      },
+      "target_url": "https://webapp1.iranlms.ir",
+      "api_version": "1"
+    },
+    {
+      "operation": "getlinkObject",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getlinkObject",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2213633,
+        "input_fields_observed": [
+          "share_string"
+        ],
+        "validation": "source-only"
+      },
+      "target_url": "https://panel.iranlms.ir/api/v3.0/getlinkObject"
+    },
+    {
+      "operation": "groupPreviewByJoinLink",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "groupPreviewByJoinLink",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1859112,
+        "input_fields_observed": [
+          "hash_link"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "handShake",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "handShake",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "websocket-only",
+      "evidence": {
+        "offset": 1654339,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "joinChannelAction",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "joinChannelAction",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1867578,
+        "input_fields_observed": [
+          "action",
+          "channel_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "joinChannelByLink",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "joinChannelByLink",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1867898,
+        "input_fields_observed": [
+          "hash_link"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "joinGroup",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "joinGroup",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1858671,
+        "input_fields_observed": [
+          "hash_link"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "joinGroupVoiceChat",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "joinGroupVoiceChat",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1839611,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "leaveGroup",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "leaveGroup",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1857966,
+        "input_fields_observed": [
+          "group_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "leaveGroupVoiceChat",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "leaveGroupVoiceChat",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1840237,
+        "input_fields_observed": [
+          "chat_guid",
+          "voice_chat_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "loginDisableTwoStep",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "loginDisableTwoStep",
+      "auth": false,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2580523,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "loginTwoStepForgetPassword",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "loginTwoStepForgetPassword",
+      "auth": false,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2580317,
+        "input_fields_observed": [
+          "phone_number"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "logout",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "logout",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2580675,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "media.upload",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "requestSendFile",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1686313,
+        "input_fields_observed": [
+          "file_name",
+          "mime",
+          "size"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "messages.delete",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "deleteMessages",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1792066,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "messages.edit",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "editMessage",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1790971,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "messages.forward",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "forwardMessages",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1790173,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "messages.history",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "getMessages",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1802034,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "messages.send",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "sendMessage",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1790558,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "registerDevice",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "registerDevice",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2581522,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "removeChannel",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "removeChannel",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1867066,
+        "input_fields_observed": [
+          "channel_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "removeGroup",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "removeGroup",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1858193,
+        "input_fields_observed": [
+          "group_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "replyRequestObjectOwner",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "replyRequestObjectOwner",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1861299,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "reportObject",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "reportObject",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1794891,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "requestChangeObjectOwner",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "requestChangeObjectOwner",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1860696,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "requestChangePhoneNumber",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "requestChangePhoneNumber",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2717524,
+        "input_fields_observed": [
+          "new_phone_number"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "requestDeleteAccount",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "requestDeleteAccount",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1834466,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "requestRecoveryEmail",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "requestRecoveryEmail",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2719088,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "requestSendFile",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "requestSendFile",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1686313,
+        "input_fields_observed": [
+          "file_name",
+          "mime",
+          "size"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "resendCodeRecoveryEmail",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "resendCodeRecoveryEmail",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2719330,
+        "input_fields_observed": [
+          "password"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "resetContacts",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "resetContacts",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1809455,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "resetWallpapers",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "resetWallpapers",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2587029,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "revokeJoinLink",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "revokeJoinLink",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 3331320,
+        "input_fields_observed": [
+          "join_link",
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "searchChatMessages",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "searchChatMessages",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1794051,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "searchGlobalMessages",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "searchGlobalMessages",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1794267,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "searchGlobalObjects",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "searchGlobalObjects",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1820345,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "searchSelection",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "searchSelection",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "bot",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1864635,
+        "input_fields_observed": [
+          "bot_guid",
+          "limit",
+          "search_text",
+          "selection_id"
+        ],
+        "validation": "source-only"
+      },
+      "target_url_field": "dc_url"
+    },
+    {
+      "operation": "searchStickers",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "searchStickers",
+      "auth": true,
+      "operation_kind": "read",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2118460,
+        "input_fields_observed": [
+          "search_text",
+          "start_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "seenChats",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "seenChats",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1814453,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "sendChatActivity",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "sendChatActivity",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1814763,
+        "input_fields_observed": [
+          "activity",
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "sendCode",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "sendCode",
+      "auth": false,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2579012,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      },
+      "api_version": "6"
+    },
+    {
+      "operation": "sendGroupVoiceChatActivity",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "sendGroupVoiceChatActivity",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1847446,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "sendLive",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "sendLive",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2366835,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "sendMessage",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "sendMessage",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1790558,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "sendMessageAPICall",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "sendMessageAPICall",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "bot",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1863757,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "sendRubinoPost",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "sendRubinoPost",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1943015,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "sendWalletTransferMessage",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "sendWalletTransferMessage",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1795273,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setActionChat",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setActionChat",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1813851,
+        "input_fields_observed": [
+          "action",
+          "duration",
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setAskSpamAction",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setAskSpamAction",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1834996,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setBlockUser",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setBlockUser",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2719932,
+        "input_fields_observed": [
+          "action",
+          "user_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setChannelAdmin",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setChannelAdmin",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1869958,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setChannelLink",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setChannelLink",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1869764,
+        "input_fields_observed": [
+          "channel_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setChatUseTime",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setChatUseTime",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1823653,
+        "input_fields_observed": [
+          "object_guid",
+          "time"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setGroupAdmin",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setGroupAdmin",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1860249,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setGroupDefaultAccess",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setGroupDefaultAccess",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1855892,
+        "input_fields_observed": [
+          "access_list",
+          "group_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setGroupLink",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setGroupLink",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1855224,
+        "input_fields_observed": [
+          "group_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setGroupVoiceChatSetting",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setGroupVoiceChatSetting",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1841344,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setGroupVoiceChatState",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setGroupVoiceChatState",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1840503,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setLiveSetting",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setLiveSetting",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2367841,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setPinChatInFolder",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setPinChatInFolder",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2069377,
+        "input_fields_observed": [
+          "action",
+          "folder_id",
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setPinMessage",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setPinMessage",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1791286,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setPublicKey",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setPublicKey",
+      "auth": true,
+      "operation_kind": "mutation",
+      "api_version": "6",
+      "evidence": {
+        "validation": "source-only",
+        "callsite": "Wg"
+      }
+    },
+    {
+      "operation": "setSetting",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setSetting",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2588082,
+        "input_fields_observed": [
+          "settings",
+          "update_parameters"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "setupTwoStepVerification",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "setupTwoStepVerification",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2718838,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "signIn",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "signIn",
+      "auth": false,
+      "operation_kind": "mutation",
+      "api_version": "6",
+      "evidence": {
+        "validation": "source-only",
+        "callsite": "qg"
+      }
+    },
+    {
+      "operation": "stopBot",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "stopBot",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1863240,
+        "input_fields_observed": [
+          "bot_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "stopLive",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "stopLive",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2367313,
+        "input_fields_observed": [
+          "live_id"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "terminateOtherSessions",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "terminateOtherSessions",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2586254,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "terminateSession",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "terminateSession",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2586075,
+        "input_fields_observed": [
+          "session_key"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "transcribeVoice",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "transcribeVoice",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1850513,
+        "input_fields_observed": [
+          "message_id",
+          "object_guid"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "turnOffTwoStep",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "turnOffTwoStep",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2717273,
+        "input_fields_observed": [
+          "password"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "unregisterDevice",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "unregisterDevice",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "plain",
+      "evidence": {
+        "offset": 2580991,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "updateChannelUsername",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "updateChannelUsername",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1869304,
+        "input_fields_observed": [
+          "channel_guid",
+          "username"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "updateProfile",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "updateProfile",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1833505,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "updateUsername",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "updateUsername",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1834695,
+        "input_fields_observed": [
+          "username"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "uploadAvatar",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "uploadAvatar",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 1814984,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "verifyChangePhoneNumber",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "verifyChangePhoneNumber",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2717716,
+        "input_fields_observed": [
+          "code",
+          "hash"
+        ],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "verifyRecoveryEmail",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "verifyRecoveryEmail",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2719530,
+        "input_fields_observed": [],
+        "validation": "source-only"
+      }
+    },
+    {
+      "operation": "votePoll",
+      "method": "POST",
+      "path": "/",
+      "rpc_method": "votePoll",
+      "auth": true,
+      "operation_kind": "mutation",
+      "dc_type": "api",
+      "wire_mode": "encrypted",
+      "evidence": {
+        "offset": 2351746,
+        "input_fields_observed": [
+          "poll_id",
+          "selection_index"
+        ],
+        "validation": "source-only"
+      }
+    }
+  ],
+  "authentication": {
+    "request_code_operation": "sendCode",
+    "verify_code_operation": "signIn",
+    "phone_field": "phone_number",
+    "challenge_field": "phone_code_hash",
+    "code_field": "phone_code",
+    "token_field": "auth"
+  },
   "websocket": null,
-  "authentication": null,
   "notes": [
-    "This file ships as a safe placeholder and intentionally has no inferred Rubika endpoint.",
-    "A maintainer must replace it with the complete reviewed catalog generated from authorized documentation and a test account before public login is enabled."
+    "RubikaTransport implements native handshake, AES frames and DC discovery.",
+    "Names and wire formats extracted from public source; account integration is not yet verified.",
+    "handShake is available only through the realtime transport."
   ]
 }

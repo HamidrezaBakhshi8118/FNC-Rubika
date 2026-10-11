@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Mapping
 
 from .models import MediaRef, QueuedOperation
 
@@ -30,7 +30,14 @@ class MediaService:
         raw = result.get("media", result)
         return MediaRef.from_dict(raw)
 
-    async def download(self, file_id: str, destination: str | Path) -> MediaRef:
+    async def download(self, file_id: str | Mapping[str, Any] | MediaRef, destination: str | Path) -> MediaRef:
         target = Path(destination)
-        result = await self._client.transport.download(file_id, target)
+        await self._client.start()
+        transport = self._client.transport
+        from .exceptions import SessionExpiredError
+        try:
+            result = await transport.download(file_id, target)
+        except SessionExpiredError as exc:
+            await self._client._recover_session(transport, exc)
+            result = await self._client.transport.download(file_id, target)
         return MediaRef.from_dict(result)

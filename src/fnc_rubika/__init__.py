@@ -6,6 +6,7 @@ from .models import Delivery, EventEnvelope, MediaRef, Message, Session
 from .storage import EncryptedSQLiteStore, KeyringKeyProvider, PassphraseKeyProvider
 from .sync import SyncClient
 from .sessions import SessionPool
+from .rubika import RubikaOtpAuthenticator, RubikaTransport
 
 __all__ = [
     "AsyncClient",
@@ -21,5 +22,7 @@ __all__ = [
     "Session",
     "SessionPool",
     "SyncClient",
+    "RubikaOtpAuthenticator",
+    "RubikaTransport",
     "validate_iranian_phone",
 ]
