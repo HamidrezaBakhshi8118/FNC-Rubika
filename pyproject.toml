@@ -15,10 +15,8 @@ dependencies = [
   "websockets>=13,<17",
   "pycryptodome>=3.20,<4",
   "keyring>=24,<26",
+  "chroma-term-console>=0.1.4,<0.2; sys_platform == 'win32' and platform_machine == 'AMD64'",
 ]
-
-[project.scripts]
-fnc-rubika = "fnc_rubika.cli:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<10", "pytest-cov>=5,<7"]

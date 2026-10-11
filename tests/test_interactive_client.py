@@ -65,6 +65,40 @@ def test_named_client_creates_an_encrypted_session_without_user_hardcoding(tmp_p
     asyncio.run(scenario())
 
 
+def test_interactive_login_reads_phone_and_otp_without_source_values(tmp_path):
+    async def scenario() -> None:
+        registry = ContractRegistry.from_mapping({"version": "test", "base_url": "https://example.invalid", "endpoints": []})
+        client = Client(
+            "interactive",
+            registry=registry,
+            data_dir=tmp_path,
+            key_provider=PassphraseKeyProvider("a long test passphrase"),
+        )
+        prompts: list[str] = []
+
+        def read_phone(prompt: str) -> str:
+            prompts.append(prompt)
+            return "+989123456789"
+
+        def read_otp(prompt: str) -> str:
+            prompts.append(prompt)
+            return "12345"
+
+        try:
+            session = await client.login_interactive(
+                input_func=read_phone,
+                otp_input_func=read_otp,
+                authenticator=FakeAuthenticator(),
+            )
+            assert session.access_token == "session-token"
+            assert client.has_session()
+            assert len(prompts) == 2
+        finally:
+            await client.aclose()
+
+    asyncio.run(scenario())
+
+
 def test_catalog_api_exposes_all_reviewed_operations(tmp_path):
     async def scenario() -> None:
         registry = ContractRegistry.from_mapping(

@@ -45,9 +45,13 @@ class SessionPool:
         self._closed = False
 
     async def __aenter__(self) -> "SessionPool":
-        """Start all stored sessions concurrently; close partial starts on error."""
+        """Create missing sessions one at a time, then start all concurrently."""
 
         try:
+            # Terminal prompts must not overlap; each session is then started in parallel.
+            for client in self._clients.values():
+                if not client.has_session():
+                    await client.login_interactive()
             await asyncio.gather(*(client.start() for client in self._clients.values()))
         except BaseException:
             await self.aclose()

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime
+from getpass import getpass
 import os
 from pathlib import Path
 import re
@@ -16,6 +17,8 @@ from .contracts import AuthenticationSpec, ContractRegistry
 from .exceptions import ContractError, SecurityConfigurationError
 from .models import Session
 from .storage import EncryptedSQLiteStore, KeyProvider, KeyringKeyProvider
+from .terminal import info as terminal_info
+from .terminal import prompt_label, success as terminal_success
 from .transport import HttpWebSocketTransport
 
 
@@ -124,7 +127,7 @@ class Client:
         self._closed = False
 
     async def __aenter__(self) -> "Client":
-        """Open the stored named session and start its receiver/outbox workers."""
+        """Open a session, interactively creating it when no session exists."""
 
         await self.start()
         return self
@@ -156,18 +159,40 @@ class Client:
         self._client = self._build(session)
         return session
 
-    async def login_interactive(self, *, input_func: Callable[[str], str] = input) -> Session:
-        phone = await asyncio.to_thread(input_func, "شماره روبیکا را با فرمت +989XXXXXXXXX وارد کنید: ")
-        phone = validate_iranian_phone(phone)
-        authenticator = ContractOtpAuthenticator(self.registry)
+    async def login_interactive(
+        self,
+        *,
+        input_func: Callable[[str], str] = input,
+        otp_input_func: Callable[[str], str] = getpass,
+        authenticator: OtpAuthenticator | None = None,
+    ) -> Session:
+        """Create this session from terminal input without echoing the OTP.
+
+        Chroma styles non-secret prompt labels on supported Windows terminals.
+        Phone number, verification code, and session material are never logged.
+        """
+
+        owned_authenticator: ContractOtpAuthenticator | None = None
+        if authenticator is None:
+            owned_authenticator = ContractOtpAuthenticator(self.registry)
+            authenticator = owned_authenticator
         try:
+            terminal_info(f"ساخت سشن رمزگذاری‌شدهٔ «{self.session_name}»")
+            phone = await asyncio.to_thread(
+                input_func,
+                prompt_label("شماره روبیکا را با فرمت +989XXXXXXXXX وارد کنید"),
+            )
+            phone = validate_iranian_phone(phone)
             challenge_id = await authenticator.begin(phone)
-            code = await asyncio.to_thread(input_func, "کد تایید ارسال‌شده را وارد کنید: ")
+            terminal_info("کد تأیید ارسال شد؛ آن را بدون نمایش در ترمینال وارد کنید.")
+            code = await asyncio.to_thread(otp_input_func, prompt_label("کد تأیید"))
             session = await authenticator.complete(challenge_id, code)
         finally:
-            await authenticator.aclose()
+            if owned_authenticator is not None:
+                await owned_authenticator.aclose()
         self.store.save_secret("session", session.as_dict())
         self._client = self._build(session)
+        terminal_success(f"سشن «{self.session_name}» با موفقیت و به‌صورت رمزگذاری‌شده ساخته شد.")
         return session
 
     def async_client(self) -> AsyncClient:
@@ -181,15 +206,17 @@ class Client:
             return self._client
         stored = self.store.load_secret("session")
         if stored is None:
-            raise SecurityConfigurationError("No session exists. Run `fnc-rubika login <session-name>` first.")
+            raise SecurityConfigurationError("No session exists. Enter the client through `async with Client(...)` to sign in interactively.")
         self._client = self._build(Session.from_dict(stored))
         return self._client
 
     async def start(self) -> None:
-        """Start durable receiving and sending for this named session."""
+        """Create a missing session interactively, then start durable I/O."""
 
         if self._closed:
             raise RuntimeError("This named session is closed and cannot be restarted")
+        if not self.has_session():
+            await self.login_interactive()
         await self.async_client().start()
 
     @property

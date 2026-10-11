@@ -12,20 +12,27 @@ py -3.13 -m pip install .
 
 Python 3.11 تا 3.13 پشتیبانی می‌شود. نصب عادی شامل keyring سیستم‌عامل است؛ بنابراین کلید رمزگذاری از سیستم‌عامل گرفته می‌شود و در پروژه ذخیره نمی‌شود.
 
-## ساخت سشن از ترمینال
+## ساخت خودکار سشن در نخستین استفاده
 
-فقط یک‌بار برای هر حساب این دستور را اجرا کنید:
+برای login هیچ دستور CLI جداگانه‌ای وجود ندارد. کافی است برنامه را به شکل
+معمول اجرا کنید؛ اگر سشن `personal` قبلاً وجود نداشته باشد، خود context manager
+در همان ترمینال شماره و سپس کد را می‌پرسد. labelهای غیرحساس با
+`chroma-term-console` رنگی نمایش داده می‌شوند و OTP با `getpass` بدون echo
+گرفته می‌شود:
 
-```powershell
-fnc-rubika login personal
+```python
+from fnc_rubika import Client
+
+async with Client("personal") as client:
+    await client.messages.send("chat-id", "سلام")
 ```
 
-CLI دو مقدار می‌پرسد:
-
 ```text
+ساخت سشن رمزگذاری‌شدهٔ «personal»
 شماره روبیکا را با فرمت +989XXXXXXXXX وارد کنید: +989123456789
-کد تایید ارسال‌شده را وارد کنید: 12345
-Session 'personal' was created securely.
+کد تأیید ارسال شد؛ آن را بدون نمایش در ترمینال وارد کنید.
+کد تأیید: ******
+سشن «personal» با موفقیت و به‌صورت رمزگذاری‌شده ساخته شد.
 ```
 
 - شماره باید دقیقاً با `+989` آغاز شود؛ شکل‌هایی مثل `0912…` یا `989…` پذیرفته نمی‌شوند تا کشور و فرمت مبهم نباشد.
@@ -49,7 +56,8 @@ async with Client("personal") as client:
 است. برای چند حساب هم‌زمان، از `SessionPool` استفاده کنید؛ راهنمای کامل در
 [SESSIONS.fa.md](SESSIONS.fa.md) است.
 
-برای ساخت سشن در یک برنامهٔ ترمینالی، بدون ذخیره‌سازی شماره یا code در source:
+اگر می‌خواهید ورود را پیش از شروع کار انجام دهید، می‌توانید همان flow را
+مستقیم صدا بزنید؛ شماره و code همچنان در source قرار نمی‌گیرند:
 
 ```python
 from fnc_rubika import Client
@@ -107,7 +115,8 @@ async with Client("personal") as client:
 - قرارداد WebSocket: URL، auth، heartbeat، event id/type/payload/cursor و resume.
 - fixtureهای کاملاً redact‌شده و تست integration با حساب آزمایشی جدا.
 
-پس از انتشار catalog معتبر در خود package، دستور `fnc-rubika login personal` بدون فایل پیکربندی یا کدنویسی اضافه برای کاربر کار خواهد کرد.
+پس از انتشار catalog معتبر در خود package، ورود نخست در همان
+`async with Client("personal")` بدون فایل پیکربندی یا کدنویسی اضافه برای کاربر کار خواهد کرد.
 
 ## خطاهای رایج
 
@@ -115,8 +124,8 @@ async with Client("personal") as client:
 | --- | --- |
 | `Phone number must use ...` | شماره را مانند `+989123456789` وارد کنید. |
 | `no reviewed OTP authentication contract` | نسخهٔ نصب‌شده catalog زنده ندارد؛ نسخهٔ دارای catalog تأییدشده را نصب کنید. |
-| `No session exists` | ابتدا `fnc-rubika login <session-name>` را اجرا کنید. |
-| `SessionExpiredError` | دوباره با همان نام سشن login کنید؛ سیستم خودکار OTP دریافت نمی‌کند. |
+| سشن وجود ندارد | ورود به `async with Client("session-name")` به‌صورت خودکار شماره و OTP را می‌پرسد. |
+| `SessionExpiredError` | سیستم خودکار OTP دریافت نمی‌کند. یک `Client` جدید با همان نام بسازید و `await client.login_interactive()` را صدا بزنید تا سشن رمزگذاری‌شده جایگزین شود. |
 | `unknown` در outbox | پاسخ ارسال مبهم بوده و endpoint idempotent نیست؛ قبل از ارسال مجدد نتیجه را بررسی کنید. |
 
 ## امنیت

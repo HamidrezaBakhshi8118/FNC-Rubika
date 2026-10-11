@@ -43,8 +43,8 @@ Client(
 
 | متد / ویژگی | امضا | نتیجه و خطا |
 | --- | --- | --- |
-| context manager | `async with Client("personal") as client` | سشن ذخیره‌شده را بار می‌کند و receiver/outbox را آغاز می‌کند؛ هنگام خروج همه‌چیز را می‌بندد. نبود سشن: `SecurityConfigurationError`. |
-| `start` | `await client.start()` | معادل بخش آغازین context manager؛ idempotent تا قبل از بستن. |
+| context manager | `async with Client("personal") as client` | سشن ذخیره‌شده را بار می‌کند؛ اگر نبود، شماره و OTP را در ترمینال می‌پرسد، سپس receiver/outbox را آغاز می‌کند. هنگام خروج همه‌چیز بسته می‌شود. |
+| `start` | `await client.start()` | معادل بخش آغازین context manager؛ در نبود سشن ورود تعاملی را آغاز می‌کند و تا قبل از بستن idempotent است. |
 | `aclose` | `await client.aclose()` | receiver، outbox، HTTP و store را می‌بندد؛ idempotent است. کلاینت بسته restart نمی‌شود. |
 | `has_session` | `client.has_session()` | `bool`؛ تنها وجود سشن ذخیره‌شده را می‌سنجد، اعتبار آن در سرویس را نه. |
 | `session_name` | `client.session_name` | نام محلی immutable سشن. |
@@ -55,8 +55,8 @@ Client(
 
 | متد | امضا | ورودی و رفتار |
 | --- | --- | --- |
-| `login` | `await client.login(phone_number, code, *, authenticator=None)` | `phone_number` دقیقاً `+989XXXXXXXXX` (space و `-` در ورودی عادی می‌تواند نرمال شود)، `code` OTP غیرخالی. برای برنامه‌های عادی از CLI استفاده کنید. `authenticator` adapter تاییدشدهٔ OTP است؛ اگر داده نشود catalog فعال باید authentication contract معتبر داشته باشد. سشن رمزگذاری‌شده ذخیره می‌شود. |
-| `login_interactive` | `await client.login_interactive(*, input_func=input)` | شماره و OTP را از ترمینال می‌پرسد. `input_func` برای تست قابل تزریق است. هیچ‌کدام log یا persist نمی‌شوند. |
+| `login` | `await client.login(phone_number, code, *, authenticator=None)` | API پیشرفته برای adapterهای تاییدشده. `phone_number` دقیقاً `+989XXXXXXXXX` و `code` OTP غیرخالی است. سشن رمزگذاری‌شده ذخیره می‌شود. |
+| `login_interactive` | `await client.login_interactive(*, input_func=input, otp_input_func=getpass, authenticator=None)` | شماره و OTP را از ترمینال می‌پرسد. labelهای غیرحساس Chroma-styled هستند و OTP پیش‌فرض echo نمی‌شود. برای تست، inputها و adapter قابل تزریق‌اند. |
 
 پس از login، object باز می‌ماند و می‌توانید `async with client:` استفاده کنید؛ اگر تنها برای login ساخته‌اید، همیشه `await client.aclose()` را در `finally` بگذارید.
 
@@ -193,7 +193,7 @@ with SyncClient(async_client) as client:
 | خطا | علت / اقدام |
 | --- | --- |
 | `SecurityConfigurationError` | سشن وجود ندارد، keyring در دسترس نیست یا کلید نامعتبر است. |
-| `SessionExpiredError` | login دستی با همان نام سشن انجام دهید. |
+| `SessionExpiredError` | login خودکار انجام نمی‌شود؛ یک `Client` جدید با همان نام بسازید و `await client.login_interactive()` را اجرا کنید. |
 | `ContractError` | catalog ناقص، فاقد OTP/WS، یا نامعتبر است. |
 | `UnsupportedOperationError` | operation در catalog بازبینی‌شده وجود ندارد. |
 | `RateLimitError` | سرویس rate limit داده؛ `Retry-After` رعایت می‌شود. سرعت را بالا نبرید. |
