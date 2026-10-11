@@ -1,0 +1,11 @@
+{
+  "version": "replace-with-reviewed-date-or-release",
+  "base_url": "https://replace-with-reviewed-base-url.example",
+  "endpoints": [],
+  "websocket": null,
+  "notes": [
+    "This intentionally contains no inferred Rubika route, authentication header, or wire frame.",
+    "Populate it only from supplied official documentation and traffic from the authorised test account.",
+    "Redact tokens, cookies, phone numbers, OTPs, device identifiers, message bodies, and media URLs before committing fixtures."
+  ]
+}

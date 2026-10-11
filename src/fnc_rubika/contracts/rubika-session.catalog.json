@@ -1,0 +1,11 @@
+{
+  "version": "unconfigured",
+  "base_url": "https://replace-with-reviewed-base-url.example",
+  "endpoints": [],
+  "websocket": null,
+  "authentication": null,
+  "notes": [
+    "This file ships as a safe placeholder and intentionally has no inferred Rubika endpoint.",
+    "A maintainer must replace it with the complete reviewed catalog generated from authorized documentation and a test account before public login is enabled."
+  ]
+}
