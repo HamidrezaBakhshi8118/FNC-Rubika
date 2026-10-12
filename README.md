@@ -12,10 +12,11 @@ schemas still need account integration testing; name coverage is not a claim
 that every method has been validated live.
 
 ```powershell
-python -m pip install .
-python -m fnc_rubika login personal
-python -m fnc_rubika methods
+python -m pip install "git+https://github.com/HamidrezaBakhshi8118/FNC-Rubika.git@main"
 ```
+
+No login command is required. The first `async with Client("personal")`
+prompts for the phone number and OTP when the named session does not exist.
 
 When the session is missing, locally expired or rejected by the provider,
 `Client` prompts for a phone number, OTP and, if required, the existing two-step
@@ -39,11 +40,14 @@ from fnc_rubika import Client
 
 async def main():
     async with Client("personal") as client:
-        chats = await client.api.getChats()
-        print(chats)
+        await client.messages.send("u0BZZ2v005a960184e514f3254431d0c", "سلام")
 
 asyncio.run(main())
 ```
+
+In VS Code select the project's `venv\\Scripts\\python.exe` interpreter. A
+successful `pip install` into another Python installation will not be visible
+to Pylance or to the Run button that uses a different interpreter.
 
 ```python
 from fnc_rubika import Client

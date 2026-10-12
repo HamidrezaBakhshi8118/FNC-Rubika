@@ -6,13 +6,19 @@ schemaها هنوز نیازمند تأیید عملی روی حساب هستن�
 
 ## نصب و ورود
 
-در پوشه پروژه اجرا کنید:
+نصب مستقیم از GitHub داخل venv فعال:
 
 ```powershell
-python -m pip install .
-python -m fnc_rubika login personal
-python -m fnc_rubika methods
+python -m pip install "git+https://github.com/HamidrezaBakhshi8118/FNC-Rubika.git@main"
 ```
+
+برای ورود هیچ CLI جداگانه‌ای لازم نیست. اولین اجرای
+`async with Client("personal")` اگر سشن موجود نباشد شماره و OTP را در همان
+ترمینال می‌پرسد.
+
+در VS Code از `Python: Select Interpreter` مفسر
+`venv\\Scripts\\python.exe` را انتخاب کنید. نصب در Python 3.14 سراسری برای
+فایلی که با Python 3.12 یا venv دیگری اجرا می‌شود قابل مشاهده نیست.
 
 در نبود سشن، انقضای محلی یا رد شدن سشن توسط سرویس، شماره و کد در ترمینال
 پرسیده می‌شوند. شماره‌های `09…`، `989…`، `+989…` و `00989…` و ارقام فارسی
@@ -65,13 +71,14 @@ with Client("personal") as client:
 
 ```python
 async with Client("personal") as client:
-    sent = await client.messages.send("object-guid", "سلام")
-    history = await client.messages.history("object-guid", limit=20)
+    sent = await client.messages.send("u0BZZ2v005a960184e514f3254431d0c", "سلام")
+    history = await client.messages.history("u0BZZ2v005a960184e514f3254431d0c", limit=20)
     media = await client.media.upload("photo.jpg")
     await client.media.download(media, "downloaded.jpg")
 ```
 
-شناسه گفت‌وگو همان object_guid روبیکا است. دانلود به MediaRef یا descriptor
+شناسه گفت‌وگو همان object_guid روبیکا است. مقدار خام GUID، `#c=GUID` و URL
+کامل نسخهٔ وب پذیرفته می‌شوند و قبل از RPC به GUID خام تبدیل می‌شوند. دانلود به MediaRef یا descriptor
 شامل `file_id`، `access_hash_rec`، `dc_id` و `size` نیاز دارد؛ شناسه تنها کافی
 نیست. برای فایل دریافتی از `file_inline` واقعی استفاده کنید. فایل محلی آپلود
 تا پایان صف باید باقی بماند.
