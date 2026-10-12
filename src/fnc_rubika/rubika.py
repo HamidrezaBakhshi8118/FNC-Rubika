@@ -95,10 +95,13 @@ class RubikaTransport:
     async def validate_session(self) -> None:
         """Check account-wide read access without sending or replaying messages.
 
+        Register the device first: a freshly authenticated session otherwise
+        rejects normal account RPCs with NOT_REGISTERED.
         A destination-specific denial remains AccessDeniedError. Only denial
         of every available account check makes the stored session unusable.
         This does not claim that generic INVALID_AUTH proves expiration.
         """
+        await self.prepare()
         checks = [('getChats', {})]
         if self.session.account_id:
             checks.append(('getUserInfo', {'user_guid': self.session.account_id}))

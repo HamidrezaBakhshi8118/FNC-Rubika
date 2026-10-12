@@ -191,6 +191,8 @@ def test_native_validation_uses_account_reads_and_preserves_network_errors(resul
         transport = RubikaTransport(ContractRegistry.from_file(default_catalog_path()), Session('a'*32, account_id='own-account'))
         calls = []
         async def rpc(operation, payload):
+            if operation == 'registerDevice':
+                return {}
             calls.append((operation, payload))
             result = results[len(calls)-1]
             if isinstance(result, Exception):

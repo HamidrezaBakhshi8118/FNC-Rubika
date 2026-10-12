@@ -38,7 +38,8 @@ Arabic digits are still accepted for phone numbers and verification codes.
 `ERROR_ACTION/INVALID_AUTH` triggers session renewal. Rubika's web client treats
 `ERROR_GENERIC/INVALID_AUTH` as access denied; this raises `AccessDeniedError`,
 which also inherits from `RemoteOperationError`. Before starting workers, the
-named client checks account access using `getChats` and, if necessary, the
+named client registers the device with `registerDevice`, then checks account
+access using `getChats` and, if necessary, the
 account's own `getUserInfo`. If all account checks are denied, it requests a
 fresh login once. A rejected fresh session raises `SessionRenewalError` without
 repeating OTP requests. Network errors do not trigger login. A denial limited

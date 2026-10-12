@@ -391,7 +391,7 @@ class Client(RubikaMethods):
             if validate is not None:
                 try:
                     await validate()
-                except SessionExpiredError:
+                except (SessionExpiredError, AccessDeniedError):
                     if not self.auto_login:
                         raise
                     if not signed_in:
