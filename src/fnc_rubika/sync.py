@@ -88,7 +88,9 @@ class SyncClient:
         registry = getattr(self._async, 'registry', None) or getattr(self._async.transport, 'registry', None)
         if name.startswith('_') or registry is None or name not in registry.operations():
             raise AttributeError(name)
-        return lambda **payload: self.api.call(name, payload)
+        def call(*, wait: bool = True, timeout: float | None = 30, **payload):
+            return self.api.call(name, payload, wait=wait, timeout=timeout)
+        return call
 
     def __enter__(self) -> "SyncClient":
         self.start()

@@ -120,14 +120,16 @@ class RubikaTransport:
             raise SessionExpiredError('Rubika rejected the current session')
         if response.status_code == 429:
             raise RateLimitError()
+        if response.status_code >= 500:
+            raise AmbiguousDeliveryError(f'Rubika returned HTTP {response.status_code}; delivery could not be confirmed')
         if response.status_code != 200:
             raise RemoteOperationError(f'Rubika returned HTTP {response.status_code}')
         try:
             result = response.json()
         except ValueError as exc:
-            raise TransportError('Rubika returned a non-JSON response') from exc
+            raise AmbiguousDeliveryError('Rubika returned a non-JSON response; delivery could not be confirmed') from exc
         if not isinstance(result, Mapping):
-            raise TransportError('Rubika returned an invalid response')
+            raise AmbiguousDeliveryError('Rubika returned an invalid response; delivery could not be confirmed')
         return result
 
     @staticmethod
@@ -203,9 +205,15 @@ class RubikaTransport:
         else:
             raise ContractError('This operation is available only through the realtime stream')
         response = await self._post(url or await self._url(dc_type), body, plain=wire_mode in {'plain', 'service'})
-        if response.get('data_enc') and wire_mode == 'encrypted':
-            response = RubikaCipher(auth).decrypt(response['data_enc'])
-        return self._unwrap(response)
+        try:
+            if response.get('data_enc') and wire_mode == 'encrypted':
+                response = RubikaCipher(auth).decrypt(response['data_enc'])
+            return self._unwrap(response)
+        except (SessionExpiredError, RateLimitError):
+            # These are definitive server rejections, safe for the recovery flow.
+            raise
+        except TransportError as exc:
+            raise AmbiguousDeliveryError('Rubika response could not be decoded; delivery could not be confirmed') from exc
 
     def supports_idempotency(self, operation: str) -> bool:
         # rnd is visible in source but deduplication guarantees were not verified.
@@ -244,6 +252,12 @@ class RubikaTransport:
         result = await self.rpc(spec.rpc_method or operation, data, authenticated=spec.auth,
                                 api_version=spec.api_version, url=target_url,
                                 wire_mode=spec.wire_mode, dc_type=spec.dc_type)
+        try:
+            return self._normalize_result(operation, data, result)
+        except (TransportError, KeyError, TypeError, AttributeError) as exc:
+            raise AmbiguousDeliveryError('Rubika response lacks a valid operation result; delivery could not be confirmed') from exc
+
+    def _normalize_result(self, operation: str, data: Mapping[str, Any], result: Mapping[str, Any]) -> Mapping[str, Any]:
         if operation in {'messages.send', 'messages.edit'}:
             update = result.get('message_update') or {}
             message = update.get('message') or update
@@ -259,7 +273,7 @@ class RubikaTransport:
 
     @staticmethod
     def _message(message: Mapping[str, Any], chat_id: str) -> dict[str, Any]:
-        if not message.get('message_id'):
+        if not isinstance(message, Mapping) or not message.get('message_id'):
             raise TransportError('The provider response lacks a message ID')
         return {**message, 'chat_id': message.get('object_guid', chat_id)}
 
@@ -342,15 +356,21 @@ class RubikaTransport:
                     raise AmbiguousDeliveryError('The media upload outcome is unknown') from exc
                 if response.status_code == 401:
                     raise SessionExpiredError('Rubika rejected the media session')
+                if response.status_code >= 500:
+                    raise AmbiguousDeliveryError('The media service failed; upload delivery could not be confirmed')
                 if response.status_code != 200:
                     raise RemoteOperationError('Rubika rejected a media part')
                 try:
                     body = response.json()
                 except ValueError as exc:
-                    raise TransportError('Invalid upload response') from exc
+                    raise AmbiguousDeliveryError('Invalid upload response; delivery could not be confirmed') from exc
+                if not isinstance(body, Mapping):
+                    raise AmbiguousDeliveryError('Invalid upload response; delivery could not be confirmed')
                 if body.get('status_det') != 'OK':
                     raise RemoteOperationError('Rubika rejected a media part')
                 received_hash = (body.get('data') or {}).get('access_hash_rec') or received_hash
+        if not received_hash:
+            raise AmbiguousDeliveryError('The upload response lacks its access hash; delivery could not be confirmed')
         return dict(file_id=str(metadata['file_id']), name=path.name, size=size,
                     content_type=payload.get('content_type'), dc_id=metadata.get('dc_id'), access_hash_rec=received_hash)
 

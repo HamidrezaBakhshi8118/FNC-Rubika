@@ -100,10 +100,10 @@ class HttpWebSocketTransport:
                 raise TransportError(f"Unsupported reviewed request body mode {endpoint.body_mode!r}")
         except OSError as exc:
             raise TransportError("The media file could not be opened") from exc
-        except httpx.TimeoutException as exc:
-            raise AmbiguousDeliveryError("The request timed out before delivery could be confirmed") from exc
         except (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout) as exc:
             raise TransportError("The HTTP request failed") from exc
+        except httpx.TimeoutException as exc:
+            raise AmbiguousDeliveryError("The request timed out before delivery could be confirmed") from exc
         except httpx.HTTPError as exc:
             raise AmbiguousDeliveryError("The connection ended before delivery could be confirmed") from exc
         return self._decode_response(response, endpoint.success_statuses)
@@ -122,13 +122,15 @@ class HttpWebSocketTransport:
                 delay = None
             raise RateLimitError(delay)
         if response.status_code not in success_statuses:
+            if response.status_code >= 500:
+                raise AmbiguousDeliveryError(f"Provider returned HTTP {response.status_code}; delivery could not be confirmed")
             raise RemoteOperationError(f"Provider returned HTTP {response.status_code}")
         try:
             body = response.json()
-        except json.JSONDecodeError as exc:
-            raise TransportError("The provider returned a non-JSON response") from exc
+        except ValueError as exc:
+            raise AmbiguousDeliveryError("The provider returned a non-JSON response; delivery could not be confirmed") from exc
         if not isinstance(body, Mapping):
-            raise TransportError("The provider returned an invalid JSON response")
+            raise AmbiguousDeliveryError("The provider returned an invalid JSON response; delivery could not be confirmed")
         return body
 
     async def stream_events(self, cursor: str | None) -> AsyncIterator[Mapping[str, Any]]:

@@ -17,6 +17,10 @@ from .exceptions import (
     RateLimitError,
     RemoteOperationError,
     SessionExpiredError,
+    SessionRenewalError,
+    InvalidCodeError,
+    TwoStepRequiredError,
+    SecurityConfigurationError,
     TransportError,
     ContractError,
 )
@@ -163,6 +167,8 @@ class AsyncClient:
                 raise ClientClosedError('The client is closed')
             if self.transport is not rejected:
                 return
+            if isinstance(self._fatal_error, SessionExpiredError):
+                raise self._fatal_error
             if self._reauthenticate is None:
                 self._fatal_error = error
                 self._inbox_changed.set()
@@ -178,11 +184,27 @@ class AsyncClient:
                 await rejected.aclose()
             except asyncio.CancelledError:
                 raise
-            except Exception:
-                self._fatal_error = error
+            except Exception as exc:
+                # Do not expose arbitrary authenticator/provider exception text.
+                if isinstance(exc, InvalidCodeError):
+                    reason = 'The verification code was rejected.'
+                elif isinstance(exc, TwoStepRequiredError):
+                    reason = 'The two-step password was rejected.'
+                elif isinstance(exc, SecurityConfigurationError):
+                    reason = 'Account identity or secure session storage could not be verified.'
+                elif isinstance(exc, EOFError):
+                    reason = 'Terminal input ended before login completed.'
+                elif isinstance(exc, AccessDeniedError):
+                    reason = 'Rubika denied access while preparing the replacement session.'
+                elif isinstance(exc, TransportError):
+                    reason = 'The replacement session could not be verified with Rubika.'
+                else:
+                    reason = 'Login did not establish a usable session.'
+                failure = SessionRenewalError('Session renewal failed. '+reason)
+                self._fatal_error = failure
                 self._inbox_changed.set()
                 self._outbox_changed.set()
-                raise error from None
+                raise failure from None
 
     async def replace_transport(self, replacement: Transport) -> None:
         async with self._auth_lock:
@@ -199,12 +221,22 @@ class AsyncClient:
         # Readers, receiver and outbox share one renewal. Retry only a definitive
         # authentication rejection; ambiguous mutations retain unknown status.
         async with self._auth_lock:
+            if self._fatal_error is not None:
+                raise self._fatal_error
             transport = self.transport
         try:
             return await transport.request(operation, payload, idempotency_key=idempotency_key)
         except SessionExpiredError as exc:
             await self._recover_session(transport, exc)
-            return await self.transport.request(operation, payload, idempotency_key=idempotency_key)
+            replacement = self.transport
+            try:
+                return await replacement.request(operation, payload, idempotency_key=idempotency_key)
+            except SessionExpiredError as rejected:
+                if self.transport is replacement:
+                    self._fatal_error = rejected
+                    self._inbox_changed.set()
+                    self._outbox_changed.set()
+                raise
 
     async def aclose(self) -> None:
         if self._closed:
@@ -414,14 +446,22 @@ class AsyncClient:
             except TransportError as exc:
                 self.store.retry_operation(operation_id, delay_seconds=self._retry_delay(operation), error=str(exc))
             except asyncio.CancelledError:
-                self.store.retry_operation(operation_id, delay_seconds=0, error="Client stopped during operation")
+                self._unconfirmed_operation(operation, 'Client stopped before delivery was confirmed')
                 raise
             except Exception:
-                self.store.retry_operation(operation_id, delay_seconds=self._retry_delay(operation), error="Unexpected transport failure")
+                self._unconfirmed_operation(operation, 'Unexpected transport failure before delivery was confirmed',
+                                            delay_seconds=self._retry_delay(operation))
             else:
                 self.store.complete_operation(operation_id, result)
             finally:
                 self._outbox_changed.set()
+
+    def _unconfirmed_operation(self, operation: Mapping[str, Any], error: str, *, delay_seconds: float = 0) -> None:
+        operation_id = str(operation['operation_id'])
+        if self._supports_idempotency(str(operation['operation'])):
+            self.store.retry_operation(operation_id, delay_seconds=delay_seconds, error=error)
+        else:
+            self.store.fail_operation(operation_id, error=error, unknown=True)
 
     def _supports_idempotency(self, operation: str) -> bool:
         predicate = getattr(self.transport, "supports_idempotency", None)

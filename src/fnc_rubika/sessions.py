@@ -47,13 +47,19 @@ class SessionPool:
     async def __aenter__(self) -> "SessionPool":
         """Create missing sessions one at a time, then start all concurrently."""
 
+        tasks = []
         try:
             # Terminal prompts must not overlap; each session is then started in parallel.
             for client in self._clients.values():
                 if not client.has_session():
                     await client.login_interactive()
-            await asyncio.gather(*(client.start() for client in self._clients.values()))
+            tasks = [asyncio.create_task(client.start()) for client in self._clients.values()]
+            await asyncio.gather(*tasks)
         except BaseException:
+            for task in tasks:
+                task.cancel()
+            if tasks:
+                await asyncio.gather(*tasks, return_exceptions=True)
             await self.aclose()
             raise
         return self

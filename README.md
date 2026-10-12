@@ -59,6 +59,11 @@ with Client("personal") as client:
 Use `auto_login=False` for unattended applications that must never prompt.
 A single process must own each named session store. After an ambiguous mutation
 or process crash, delivery becomes `unknown` instead of being retried blindly.
+Closing the client during a mutation, malformed success responses, and HTTP 5xx
+responses also leave delivery unconfirmed. Retry is automatic only when the
+transport explicitly guarantees idempotency. Failed terminal renewal raises
+`SessionRenewalError` and stops repeated login prompts until explicit login
+replaces the session.
 The web protocol has no observed WebSocket resume token: update APIs are
 available for application backfill, but automatic gap recovery is not implemented.
 

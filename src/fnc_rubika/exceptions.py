@@ -27,6 +27,10 @@ class SessionExpiredError(TransportError):
     """The provider rejected the session; the application must re-authenticate."""
 
 
+class SessionRenewalError(SessionExpiredError):
+    """Interactive login could not establish a usable replacement session."""
+
+
 class RateLimitError(TransportError):
     """The provider requested a retry after a delay."""
 
