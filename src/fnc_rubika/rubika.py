@@ -92,6 +92,24 @@ class RubikaTransport:
         self._closed = False
         self._prepared = False
 
+    async def validate_session(self) -> None:
+        """Check account-wide read access without sending or replaying messages.
+
+        A destination-specific denial remains AccessDeniedError. Only denial
+        of every available account check makes the stored session unusable.
+        This does not claim that generic INVALID_AUTH proves expiration.
+        """
+        checks = [('getChats', {})]
+        if self.session.account_id:
+            checks.append(('getUserInfo', {'user_guid': self.session.account_id}))
+        for method, payload in checks:
+            try:
+                await self.rpc(method, payload)
+                return
+            except AccessDeniedError:
+                continue
+        raise SessionExpiredError('The stored session failed all account access checks; sign-in is required')
+
     async def prepare(self) -> None:
         if self._prepared:
             return

@@ -13,14 +13,25 @@
 | اتصال HTTP و WebSocket | یک transport مستقل پس از باز شدن کلاینت |
 | کلید رمزگذاری | برای هر فایل از OS keyring گرفته می‌شود؛ نام حساب keyring از مسیر فایل hash می‌شود |
 
-در ویندوز، محل پیش‌فرض داده‌ها این است:
+از نسخهٔ ۰٫۲٫۵، فایل سشن در پوشهٔ اجرای برنامه ساخته می‌شود:
 
 ```text
-%LOCALAPPDATA%\fnc-rubika\<session-name>.sqlite3
+<current-working-directory>\<session-name>.rubika
 ```
 
 فایل SQLite شامل دادهٔ برنامه است، اما هر رکورد حساس با AES-256-GCM رمزگذاری
 و احراز اصالت می‌شود. کلید در خود فایل SQLite یا repository قرار نمی‌گیرد.
+
+`Client("personal")` و `Client("personal.rubika")` همان فایل را باز می‌کنند.
+با `data_dir="sessions"` پوشه را تغییر دهید و با `client.session_path` مسیر
+را ببینید. سشن‌های قدیمی در `%LOCALAPPDATA%\fnc-rubika` دست‌نخورده می‌مانند؛
+به‌صورت خودکار بارگذاری یا جابه‌جا نمی‌شوند. اولین اجرای نسخهٔ جدید در صورت
+نبود سشن محلی، شماره و کد را در ترمینال می‌پرسد.
+
+پیش از راه‌اندازی صف و وب‌سوکت، دسترسی حساب بررسی می‌شود. اگر تمام درخواست‌های
+خواندن حساب رد شوند، یک بار ورود مجدد انجام می‌شود. رد شدن سشن تازه خطای
+`SessionRenewalError` می‌دهد و درخواست کد تکرار نمی‌شود. خطای شبکه یا رد شدن
+فقط یک مقصد، به‌تنهایی ورود مجدد را فعال نمی‌کند.
 
 ## ساخت و ورود چند سشن از داخل برنامه
 
@@ -47,7 +58,7 @@ from fnc_rubika import Client
 
 async def main() -> None:
     async with Client("personal") as client:
-        message = await client.messages.send("chat-id", "سلام")
+        message = await client.send("chat-id", "سلام")
         print(message.message_id)
 ```
 
@@ -148,7 +159,7 @@ async def main() -> None:
 
 ## حفظ و حذف امن داده
 
-- از `%LOCALAPPDATA%\fnc-rubika` نسخهٔ پشتیبان plaintext نگیرید.
+- اطلاعات سشن را برای پشتیبان‌گیری به plaintext تبدیل نکنید.
 - SQLite، فایل WAL و SHM آن و `*.salt` را commit نکنید.
 - حذف دستی پوشهٔ یک سشن، صف ارسال و cursor آن را هم از بین می‌برد؛ فقط پس از
   بستن برنامه و با آگاهی از این اثر انجام دهید.

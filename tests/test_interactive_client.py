@@ -61,7 +61,7 @@ def test_named_client_creates_an_encrypted_session_without_user_hardcoding(tmp_p
         session = await client.login("+989123456789", "12345", authenticator=FakeAuthenticator())
         assert session.device_id == "device"
         assert client.has_session()
-        assert b"session-token" not in (tmp_path / "personal.sqlite3").read_bytes()
+        assert b"session-token" not in (tmp_path / "personal.rubika").read_bytes()
         await client.aclose()
 
     asyncio.run(scenario())

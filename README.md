@@ -1,6 +1,6 @@
 # fnc-rubika 0.2
 
-Python 3.11?3.14 Rubika session client with terminal login, encrypted local
+Python 3.11–3.14 Rubika session client with terminal login, encrypted local
 sessions, durable message operations, synchronous and asynchronous APIs, and
 native HTTP/WebSocket transports.
 
@@ -18,6 +18,15 @@ python -m pip install "git+https://github.com/HamidrezaBakhshi8118/FNC-Rubika.gi
 No login command is required. The first `async with Client("personal")`
 prompts for the phone number and OTP when the named session does not exist.
 
+`Client("personal")` creates `personal.rubika` in the current working directory.
+`Client("personal.rubika")` opens the same file. Use `data_dir="sessions"` to
+choose a different directory, and `client.session_path` to inspect the path.
+The file contains encrypted SQLite state, including the session, inbox and
+outbox. The encryption key remains in the OS keyring. Version 0.2.5 no longer
+automatically opens the earlier `%LOCALAPPDATA%/fnc-rubika/*.sqlite3` stores;
+those files remain untouched, and the local `.rubika` session prompts for a
+new login on first use. Keep the session file and its keyring entry together.
+
 When the session is missing, locally expired or rejected by the provider,
 `Client` prompts for a phone number, OTP and, if required, the existing two-step
 password. OTPs and passwords are hidden and not stored. Session keys and the
@@ -28,9 +37,13 @@ Arabic digits are still accepted for phone numbers and verification codes.
 
 `ERROR_ACTION/INVALID_AUTH` triggers session renewal. Rubika's web client treats
 `ERROR_GENERIC/INVALID_AUTH` as access denied; this raises `AccessDeniedError`,
-which also inherits from `RemoteOperationError`. Check that the destination GUID
-belongs to the intended chat and that the account has permission to send there.
-This response alone does not prove the session has expired. Failed operations
+which also inherits from `RemoteOperationError`. Before starting workers, the
+named client checks account access using `getChats` and, if necessary, the
+account's own `getUserInfo`. If all account checks are denied, it requests a
+fresh login once. A rejected fresh session raises `SessionRenewalError` without
+repeating OTP requests. Network errors do not trigger login. A denial limited
+to the destination still raises `AccessDeniedError`. This response alone does
+not prove the session has expired. Failed operations
 are recorded without automatic replay. Message `rnd` values follow the web
 client's range of 1 through 1,000,000.
 
@@ -54,10 +67,19 @@ from fnc_rubika import Client
 
 async def main():
     async with Client("personal") as client:
-        await client.messages.send("u0BZZ2v005a960184e514f3254431d0c", "سلام")
+        await client.send("YOUR_DESTINATION_GUID", "سلام")
 
 asyncio.run(main())
 ```
+
+`client.messages.send(...)` remains available. Message and media services have
+concrete types, and the package includes `py.typed` for editor completion.
+`Client` and `SyncClient` expose all 205 catalog RPC names as explicit methods,
+for example `await client.getChats()` or
+`await client.getUserInfo(user_guid="YOUR_USER_GUID")`. Their keyword payloads
+follow the provider's method schemas; name completion does not imply that every
+payload schema or server operation has been verified live. Regenerate these
+definitions after updating the catalog with `python scripts/generate_client_methods.py`.
 
 In VS Code select the project's `venv\\Scripts\\python.exe` interpreter. A
 successful `pip install` into another Python installation will not be visible

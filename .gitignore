@@ -7,6 +7,11 @@ htmlcov/
 venv/
 *.sqlite3
 *.sqlite3.salt
+*.rubika
+*.rubika-wal
+*.rubika-shm
+*.rubika-journal
+*.rubika.salt
 *.db
 *.db.salt
 private/

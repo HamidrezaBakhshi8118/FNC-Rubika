@@ -27,6 +27,9 @@ from .exceptions import (
 from .models import Delivery, EventEnvelope, QueuedOperation, Session
 from .storage import EncryptedSQLiteStore
 from .transport import Transport
+from .messages import MessagesService
+from .media import MediaService
+from .api import CatalogApi
 
 
 Handler = Callable[["AsyncClient", Delivery], Any | Awaitable[Any]]
@@ -72,9 +75,9 @@ class AsyncClient:
         self._fatal_error: Exception | None = None
         self._closed = False
         self._started = False
-        self._messages: Any | None = None
-        self._media: Any | None = None
-        self._api: Any | None = None
+        self._messages: MessagesService | None = None
+        self._media: MediaService | None = None
+        self._api: CatalogApi | None = None
         self._reauthenticate = reauthenticate
         self._auth_lock = asyncio.Lock()
         self._start_lock = asyncio.Lock()
@@ -87,7 +90,7 @@ class AsyncClient:
         await self.aclose()
 
     @property
-    def messages(self) -> Any:
+    def messages(self) -> MessagesService:
         if self._messages is None:
             from .messages import MessagesService
 
@@ -95,7 +98,7 @@ class AsyncClient:
         return self._messages
 
     @property
-    def media(self) -> Any:
+    def media(self) -> MediaService:
         if self._media is None:
             from .media import MediaService
 
@@ -103,7 +106,7 @@ class AsyncClient:
         return self._media
 
     @property
-    def api(self) -> Any:
+    def api(self) -> CatalogApi:
         """Expose every operation in the reviewed catalog through dynamic namespaces."""
 
         if self._api is None:

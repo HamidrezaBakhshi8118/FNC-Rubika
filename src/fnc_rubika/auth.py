@@ -5,22 +5,29 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime
 from getpass import getpass
-import os
 from pathlib import Path
 import re
 import threading
 from collections.abc import AsyncIterator
-from typing import Any, Callable, Mapping
+from typing import TYPE_CHECKING, Any, Callable, Mapping
 from uuid import uuid4
 
 from .client import AsyncClient, OtpAuthenticator
 from .contracts import AuthenticationSpec, ContractRegistry
 from .exceptions import ContractError, SecurityConfigurationError, InvalidCodeError, TwoStepRequiredError, SessionExpiredError
-from .models import Session
+from .models import Session, Message, QueuedOperation, MediaRef
+from .messages import MessagesService
+from .media import MediaService
+from .api import CatalogApi
+from .methods import RubikaMethods
+from .exceptions import AccessDeniedError, SessionRenewalError
 from .storage import EncryptedSQLiteStore, KeyProvider, KeyringKeyProvider
 from .terminal import info as terminal_info
 from .terminal import prompt_label, success as terminal_success
 from .transport import HttpWebSocketTransport
+
+if TYPE_CHECKING:
+    from .sync import SyncClient
 
 
 _SESSION_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}")
@@ -42,9 +49,7 @@ def validate_iranian_phone(value: str) -> str:
 
 
 def default_data_dir() -> Path:
-    if os.name == "nt" and os.environ.get("LOCALAPPDATA"):
-        return Path(os.environ["LOCALAPPDATA"]) / "fnc-rubika"
-    return Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")) / "fnc-rubika"
+    return Path.cwd()
 
 
 def default_catalog_path() -> Path:
@@ -103,7 +108,7 @@ class ContractOtpAuthenticator:
         await self._transport.aclose()
 
 
-class Client:
+class Client(RubikaMethods):
     """A named, encrypted session with an ergonomic async lifecycle.
 
     The usual application shape is ``async with Client("personal") as client``.
@@ -125,14 +130,15 @@ class Client:
         input_func: Callable[[str], str] = input,
         otp_input_func: Callable[[str], str] = getpass,
     ) -> None:
+        session_name = session_name.removesuffix('.rubika')
         if not _SESSION_NAME.fullmatch(session_name):
             raise ValueError("Session name must contain 1-64 letters, numbers, '_' or '-' and begin with a letter or number")
         self.session_name = session_name
-        self.data_dir = Path(data_dir) if data_dir is not None else default_data_dir()
+        self.data_dir = Path(data_dir).resolve() if data_dir is not None else default_data_dir()
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.registry = registry or ContractRegistry.from_file(contract_path or default_catalog_path())
         self.store = EncryptedSQLiteStore(
-            self.data_dir / f"{session_name}.sqlite3",
+            self.data_dir / f"{session_name}.rubika",
             key_provider=key_provider or KeyringKeyProvider(),
         )
         self._client: AsyncClient | None = None
@@ -143,6 +149,17 @@ class Client:
         self._otp_input_func = otp_input_func
         self._start_lock = asyncio.Lock()
         self._handlers: list[tuple[str, Callable[..., Any]]] = []
+        self._ready = False
+        self._startup_error: SessionRenewalError | None = None
+
+    @property
+    def session_path(self) -> Path:
+        """Path of this client's encrypted .rubika session store."""
+        return self.store.path
+
+    async def _call_operation(self, operation: str, payload: Mapping[str, Any], *, wait: bool = True, timeout: float | None = 30) -> Mapping[str, Any] | QueuedOperation:
+        await self.start()
+        return await self.api.call(operation, payload, wait=wait, timeout=timeout)
 
     async def __aenter__(self) -> "Client":
         """Open a session, interactively creating it when no session exists."""
@@ -154,7 +171,7 @@ class Client:
             raise
         return self
 
-    def __enter__(self):
+    def __enter__(self) -> SyncClient:
         from .sync import SyncClient
         self._sync = SyncClient(self)
         try:
@@ -205,18 +222,21 @@ class Client:
         return ContractOtpAuthenticator(self.registry)
 
     async def _renew_transport(self):
-        terminal_info('The session has expired. Sign in again to continue.')
+        terminal_info('The session is no longer usable. Sign in again to continue.')
         session = await self._prompt_session(input_func=self._input_func, otp_input_func=self._otp_input_func)
         self._check_account(session)
-        self.store.save_secret('session', session.as_dict())
         transport = self._transport(session)
         try:
+            validate = getattr(transport, 'validate_session', None)
+            if validate:
+                await validate()
             prepare = getattr(transport, 'prepare', None)
             if prepare:
                 await prepare()
         except BaseException:
             await transport.aclose()
             raise
+        self.store.save_secret('session', session.as_dict())
         return transport
 
     async def _save_session(self, session: Session) -> None:
@@ -228,6 +248,8 @@ class Client:
             self._client = self._build(session)
         else:
             await self._client.replace_transport(self._transport(session))
+        self._startup_error = None
+        self._ready = False
 
     def _check_account(self, session: Session) -> None:
         previous = self.store.load_secret('session')
@@ -352,31 +374,92 @@ class Client:
         if self._closed:
             raise RuntimeError("This named session is closed and cannot be restarted")
         async with self._start_lock:
+            if self._startup_error is not None:
+                raise self._startup_error
+            if self._ready:
+                return
             stored = self.store.load_secret('session')
             expired = stored is not None and Session.from_dict(stored).is_expired
+            signed_in = False
             if stored is None or expired:
                 if not self.auto_login:
                     raise SessionExpiredError('No valid session exists and automatic login is disabled')
                 await self.login_interactive()
+                signed_in = True
+            low_level = self.async_client()
+            validate = getattr(low_level.transport, 'validate_session', None)
+            if validate is not None:
+                try:
+                    await validate()
+                except SessionExpiredError:
+                    if not self.auto_login:
+                        raise
+                    if not signed_in:
+                        terminal_info('Stored session failed account access checks. Sign in again to continue.')
+                        await self.login_interactive()
+                        validate = self.async_client().transport.validate_session
+                        try:
+                            await validate()
+                        except (SessionExpiredError, AccessDeniedError):
+                            self._startup_error = SessionRenewalError('Rubika rejected account access after sign-in. Check account restrictions or protocol compatibility; automatic login will not repeat.')
+                            raise self._startup_error from None
+                    else:
+                        self._startup_error = SessionRenewalError('Rubika rejected account access after sign-in. Check account restrictions or protocol compatibility; automatic login will not repeat.')
+                        raise self._startup_error from None
             await self.async_client().start()
+            self._ready = True
 
     @property
-    def messages(self) -> Any:
+    def messages(self) -> MessagesService:
         """Typed message service for this named session."""
 
         return self.async_client().messages
 
     @property
-    def media(self) -> Any:
+    def media(self) -> MediaService:
         """Typed media service for this named session."""
 
         return self.async_client().media
 
     @property
-    def api(self) -> Any:
+    def api(self) -> CatalogApi:
         """All operations that exist in the active reviewed catalog."""
 
         return self.async_client().api
+
+    async def send(self, chat_id: str, text: str, *, reply_to_message_id: str | None = None, wait: bool = True, timeout: float | None = 30) -> Message | QueuedOperation:
+        await self.start()
+        return await self.messages.send(chat_id, text, reply_to_message_id=reply_to_message_id, wait=wait, timeout=timeout)
+
+    send_message = send
+
+    async def reply(self, chat_id: str, message_id: str, text: str, *, wait: bool = True, timeout: float | None = 30) -> Message | QueuedOperation:
+        await self.start()
+        return await self.messages.reply(chat_id, message_id, text, wait=wait, timeout=timeout)
+
+    async def edit(self, chat_id: str, message_id: str, text: str, *, wait: bool = True, timeout: float | None = 30) -> Message | QueuedOperation:
+        await self.start()
+        return await self.messages.edit(chat_id, message_id, text, wait=wait, timeout=timeout)
+
+    async def delete(self, chat_id: str, message_id: str, *, wait: bool = True, timeout: float | None = 30) -> Mapping[str, Any] | QueuedOperation:
+        await self.start()
+        return await self.messages.delete(chat_id, message_id, wait=wait, timeout=timeout)
+
+    async def forward(self, from_chat_id: str, message_id: str, to_chat_id: str, *, wait: bool = True, timeout: float | None = 30) -> Message | QueuedOperation:
+        await self.start()
+        return await self.messages.forward(from_chat_id, message_id, to_chat_id, wait=wait, timeout=timeout)
+
+    async def history(self, chat_id: str, *, cursor: str | None = None, limit: int | None = None) -> tuple[Message, ...]:
+        await self.start()
+        return await self.messages.history(chat_id, cursor=cursor, limit=limit)
+
+    async def upload(self, path: str | Path, *, content_type: str | None = None, wait: bool = True, timeout: float | None = 60) -> MediaRef | QueuedOperation:
+        await self.start()
+        return await self.media.upload(path, content_type=content_type, wait=wait, timeout=timeout)
+
+    async def download(self, file_id: str | Mapping[str, Any] | MediaRef, destination: str | Path) -> MediaRef:
+        await self.start()
+        return await self.media.download(file_id, destination)
 
     @property
     def session_expired(self) -> bool:

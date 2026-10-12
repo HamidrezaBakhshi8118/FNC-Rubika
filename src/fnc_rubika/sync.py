@@ -6,9 +6,15 @@ import asyncio
 from collections.abc import Callable
 from concurrent.futures import Future
 import threading
-from typing import Any
+from typing import TYPE_CHECKING, Any, Mapping
+from pathlib import Path
 
 from .client import AsyncClient
+from .models import Message, MediaRef, QueuedOperation
+from .sync_methods import SyncRubikaMethods
+
+if TYPE_CHECKING:
+    from .auth import Client
 
 
 class _LoopThread:
@@ -43,8 +49,8 @@ class _SyncMessages:
     def __init__(self, owner: "SyncClient") -> None:
         self._owner = owner
 
-    def send(self, *args: Any, **kwargs: Any) -> Any:
-        return self._owner._run(self._owner._async.messages.send(*args, **kwargs))
+    def send(self, chat_id: str, text: str, *, reply_to_message_id: str | None = None, wait: bool = True, timeout: float | None = 30) -> Message | QueuedOperation:
+        return self._owner._run(self._owner._async.messages.send(chat_id, text, reply_to_message_id=reply_to_message_id, wait=wait, timeout=timeout))
 
     def reply(self, *args: Any, **kwargs: Any) -> Any:
         return self._owner._run(self._owner._async.messages.reply(*args, **kwargs))
@@ -73,16 +79,45 @@ class _SyncMedia:
         return self._owner._run(self._owner._async.media.download(*args, **kwargs))
 
 
-class SyncClient:
+class SyncClient(SyncRubikaMethods):
     """Synchronous facade backed by one private asyncio loop thread."""
 
-    def __init__(self, client: AsyncClient) -> None:
+    def __init__(self, client: AsyncClient | Client) -> None:
         self._async = client
         self._loop = _LoopThread()
         self._closed = False
         self.messages = _SyncMessages(self)
         self.media = _SyncMedia(self)
         self.api = _SyncApi(self)
+
+    def _call_operation(self, operation: str, payload: Mapping[str, Any], *, wait: bool = True, timeout: float | None = 30) -> Mapping[str, Any] | QueuedOperation:
+        return self.api.call(operation, payload, wait=wait, timeout=timeout)
+
+    def send(self, chat_id: str, text: str, *, reply_to_message_id: str | None = None, wait: bool = True, timeout: float | None = 30) -> Message | QueuedOperation:
+        return self.messages.send(chat_id, text, reply_to_message_id=reply_to_message_id, wait=wait, timeout=timeout)
+
+    send_message = send
+
+    def reply(self, chat_id: str, message_id: str, text: str, *, wait: bool = True, timeout: float | None = 30) -> Message | QueuedOperation:
+        return self.messages.reply(chat_id, message_id, text, wait=wait, timeout=timeout)
+
+    def edit(self, chat_id: str, message_id: str, text: str, *, wait: bool = True, timeout: float | None = 30) -> Message | QueuedOperation:
+        return self.messages.edit(chat_id, message_id, text, wait=wait, timeout=timeout)
+
+    def delete(self, chat_id: str, message_id: str, *, wait: bool = True, timeout: float | None = 30) -> Mapping[str, Any] | QueuedOperation:
+        return self.messages.delete(chat_id, message_id, wait=wait, timeout=timeout)
+
+    def forward(self, from_chat_id: str, message_id: str, to_chat_id: str, *, wait: bool = True, timeout: float | None = 30) -> Message | QueuedOperation:
+        return self.messages.forward(from_chat_id, message_id, to_chat_id, wait=wait, timeout=timeout)
+
+    def history(self, chat_id: str, *, cursor: str | None = None, limit: int | None = None) -> tuple[Message, ...]:
+        return self.messages.history(chat_id, cursor=cursor, limit=limit)
+
+    def upload(self, path: str | Path, *, content_type: str | None = None, wait: bool = True, timeout: float | None = 60) -> MediaRef | QueuedOperation:
+        return self.media.upload(path, content_type=content_type, wait=wait, timeout=timeout)
+
+    def download(self, file_id: str | Mapping[str, Any] | MediaRef, destination: str | Path) -> MediaRef:
+        return self.media.download(file_id, destination)
 
     def __getattr__(self, name: str):
         registry = getattr(self._async, 'registry', None) or getattr(self._async.transport, 'registry', None)
