@@ -34,6 +34,20 @@ This response alone does not prove the session has expired. Failed operations
 are recorded without automatic replay. Message `rnd` values follow the web
 client's range of 1 through 1,000,000.
 
+To investigate `ERROR_GENERIC/INVALID_AUTH`, use an existing session:
+
+```powershell
+python -m fnc_rubika diagnose personal --chat-id YOUR_DESTINATION_GUID
+```
+
+The English JSON report distinguishes read access for the account from access
+to the destination and reports `SendMessages` permission when returned by the
+provider. It omits credentials, phone numbers, GUIDs, profiles, chat titles and
+messages. Diagnosis runs direct read requests with the outbox and realtime
+workers stopped; it does not initiate OTP login or send queued messages.
+Successful read checks do not prove that sending will succeed. An inconclusive
+report is not a reason to delete the session.
+
 ```python
 import asyncio
 from fnc_rubika import Client

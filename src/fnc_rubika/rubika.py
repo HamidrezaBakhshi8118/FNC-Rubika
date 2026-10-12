@@ -159,8 +159,11 @@ class RubikaTransport:
             return self._dcs
         async with self._dc_lock:
             if not self._dcs:
-                response = await self._post(self.registry.provider['dc_url'],
-                    {'api_version': '4', 'method': 'getDCs', 'data': {}, 'client': self.client_info}, plain=True)
+                body = {'api_version': '4', 'method': 'getDCs', 'data': {}, 'client': self.client_info}
+                # The web client includes the raw session auth in this plain v4 call.
+                if self.session.access_token:
+                    body['auth'] = self.session.access_token
+                response = await self._post(self.registry.provider['dc_url'], body, plain=True)
                 self._dcs = dict(self._unwrap(response))
         return self._dcs
 
