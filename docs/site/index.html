@@ -1,148 +1,3737 @@
 <!doctype html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="rtl" data-theme="light">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="راهنمای کامل fnc-rubika: سشن رمزگذاری‌شده، چندسشنی، پیام، رسانه و قرارداد API.">
-  <title>fnc-rubika | راهنمای سشن و API</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="مستندات فارسی FNC Rubika؛ نصب و ورود، پیام و فوروارد، عکس و فیلم با کپشن، تامنیل معتبر، رویدادها و کاتالوگ API.">
+<meta name="theme-color" content="#f8faf9">
+<title>FNC Rubika — مستندات فارسی کلاینت پایتون</title>
+<link rel="stylesheet" href="styles.css">
+<script src="docs.js" defer>
+</script>
 </head>
 <body>
-  <header class="hero">
-    <div class="shell">
-        <span class="badge">Private • Python 3.11–3.14 • v0.2</span>
-      <h1>fnc-rubika<br>کلاینت سشنی پایدار و چندحسابی</h1>
-      <p class="lead">کاربر فقط نام سشن می‌دهد؛ ورود از ترمینال انجام می‌شود و هر حساب inbox، outbox و فضای رمزگذاری‌شدهٔ جدا دارد.</p>
-    </div>
-  </header>
-  <nav class="topnav" aria-label="ناوبری مستندات">
-    <div class="shell">
-      <a href="#quickstart">شروع</a>
-      <a href="#single">یک سشن</a>
-      <a href="#multi">چندسشنی</a>
-      <a href="#api">API</a>
-      <a href="#events">دریافت</a>
-      <a href="#catalog">قراردادها</a>
-      <a href="#security">امنیت</a>
-    </div>
-  </nav>
-  <main class="shell">
-    <section id="quickstart" class="grid">
-      <article class="card">
-        <h2>شروع سریع؛ بدون hard-code</h2>
-        <p>ابتدا package را در محیط خصوصی نصب کنید. سپس برای هر حساب، یک نام سشن انتخاب کنید. این نام نه شماره تلفن است و نه token؛ login نخست مستقیماً از داخل برنامه انجام می‌شود.</p>
-        <pre><code>py -3.14 -m pip install .
-python -m fnc_rubika login personal
+<a class="skip-link" href="#main">رفتن به محتوای اصلی</a>
+<header class="site-header">
+<div class="header-inner">
+<a href="#overview" class="brand" aria-label="FNC Rubika، ابتدای مستندات">
+<span class="brand-symbol" aria-hidden="true">
+<i>
+</i>
+<i>
+</i>
+<i>
+</i>
+</span>
+<span dir="ltr">FNC <b>Rubika</b>
+</span>
+<span class="brand-divider">
+</span>
+<span class="brand-caption">مستندات</span>
+</a>
+<div class="header-actions">
+<button class="header-search" id="search-trigger" type="button">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+<circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.6"/>
+<path d="m16 16 4 4" stroke="currentColor" stroke-width="1.6"/>
+</svg>
+<span>جست‌وجو در مستندات</span>
+<kbd>/</kbd>
+</button>
+<button class="icon-button" id="theme-toggle" type="button" aria-label="تغییر به تم تیره">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+<path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5 8.5 8.5 0 1 0 20.5 14.6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+</svg>
+</button>
+<span class="version-pill" dir="ltr">v0.2.6</span>
+<button class="icon-button menu-button" id="menu-toggle" type="button" aria-label="باز کردن فهرست مستندات" aria-expanded="false" aria-controls="sidebar">☰</button>
+</div>
+</div>
+</header>
+<div class="page-layout">
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-top">
+<span class="sidebar-label">راهنمای کلاینت</span>
+<span class="sidebar-tag">فارسی</span>
+</div>
+<nav aria-label="فهرست مستندات">
+<a href="#overview" class="nav-link">
+<span>معرفی</span>
+<span class="nav-number">01</span>
+</a>
+<a href="#installation" class="nav-link">
+<span>نصب و شروع</span>
+<span class="nav-number">02</span>
+</a>
+<a href="#sessions" class="nav-link">
+<span>سشن و ورود</span>
+<span class="nav-number">03</span>
+</a>
+<a href="#messages" class="nav-link">
+<span>پیام و فوروارد</span>
+<span class="nav-number">04</span>
+</a>
+<a href="#media" class="nav-link">
+<span>عکس و فیلم</span>
+<span class="nav-number">05</span>
+</a>
+<a href="#events" class="nav-link">
+<span>دریافت رویداد</span>
+<span class="nav-number">06</span>
+</a>
+<a href="#queue" class="nav-link">
+<span>صف و نتیجهٔ ارسال</span>
+<span class="nav-number">07</span>
+</a>
+<a href="#multi" class="nav-link">
+<span>چند حساب و اجرای sync</span>
+<span class="nav-number">08</span>
+</a>
+<a href="#reference" class="nav-link">
+<span>مرجع کلاینت</span>
+<span class="nav-number">09</span>
+</a>
+<a href="#catalog" class="nav-link">
+<span>کاتالوگ RPC</span>
+<span class="nav-number">10</span>
+</a>
+<a href="#errors" class="nav-link">
+<span>خطاها و عیب‌یابی</span>
+<span class="nav-number">11</span>
+</a>
+<a href="#resources" class="nav-link">
+<span>راهنماهای تکمیلی</span>
+<span class="nav-number">12</span>
+</a>
+</nav>
+<div class="sidebar-bottom">
+<span class="status-dot">
+</span>
+<div>
+<strong>پایتون ۳.۱۱ و بالاتر</strong>
+<small>async و sync · اجرای محلی</small>
+</div>
+</div>
+</aside>
+<button class="menu-backdrop" id="menu-backdrop" type="button" aria-label="بستن فهرست" hidden>
+</button>
+<main id="main" class="doc-content">
+<section id="overview" class="intro" data-search="معرفی کلاینت روبیکا">
+<div class="eyebrow">
+<span class="status-dot">
+</span>مستندات توسعه‌دهنده <span class="eyebrow-separator">/</span> نسخهٔ ۰.۲.۶</div>
+<h1>روبیکا،<br>با ریتم <em>پایتون.</em>
+</h1>
+<p class="intro-text">یک کلاینت ناهم‌زمان برای حساب روبیکا؛ با ورود ترمینالی، سشن رمزگذاری‌شده و متدهایی که خواندنشان به‌اندازهٔ نوشتنشان ساده است.</p>
+<div class="intro-actions">
+<a class="button button-primary" href="#installation">شروع در چند دقیقه <span aria-hidden="true">↙</span>
+</a>
+<a class="text-link" href="#media">ارسال عکس و فیلم <span aria-hidden="true">←</span>
+</a>
+</div>
+<div class="feature-strip">
+<div>
+<strong dir="ltr">async / await</strong>
+<span>رابط اصلی ناهم‌زمان</span>
+</div>
+<div>
+<strong>سشن مستقل</strong>
+<span>یک فایل برای هر حساب</span>
+</div>
+<div>
+<strong>تامنیل الزامی</strong>
+<span>ارسال عکس با پیش‌نمایش معتبر</span>
+</div>
+</div>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>hello_rubika.py</span>
+<span class="code-tools">
+<span>Python</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-python">import asyncio
+from fnc_rubika import Client
 
-ساخت سشن رمزگذاری‌شدهٔ «personal»
-شماره روبیکا را با فرمت +989XXXXXXXXX وارد کنید: +989123456789
-کد تأیید: ******</code></pre>
-        <div class="notice">شماره، OTP، cookie و access token را در log یا source قرار ندهید. Chroma فقط labelهای غیرحساس را رنگی می‌کند و OTP با getpass بدون echo گرفته می‌شود.</div>
-      </article>
-    </section>
-    <section id="single" class="grid two-up">
-      <article class="card">
-        <h2>الگوی درست برای یک حساب</h2>
-        <p><code>Client</code> خودِ کلاینت اصلی است. دیگر لازم نیست <code>async_client()</code> را در کد عادی صدا بزنید.</p>
-        <pre><code>from fnc_rubika import Client
+async def main():
+    async with Client(&quot;personal&quot;) as client:
+        message = await client.send(&quot;YOUR_CHAT_GUID&quot;, &quot;سلام، روبیکا!&quot;)
+        print(message.message_id)
 
-async def main() -&gt; None:
-    async with Client("personal") as client:
-        sent = await client.messages.send(
-            "chat-id", "سلام"
-        )
-        print(sent.message_id)</code></pre>
-        <p><code>async_client()</code> فقط یک escape hatch برای integrationهای سطح پایین است و همان client داخلی را برمی‌گرداند.</p>
-      </article>
-      <article class="card">
-        <h2>چرخهٔ عمر سشن</h2>
-        <div class="flow">
-          <div>context manager شماره و OTP را می‌گیرد.</div>
-          <div>سشن با AES-256-GCM ذخیره می‌شود.</div>
-          <div>context manager receiver و outbox را شروع می‌کند.</div>
-          <div>خروج، اتصال‌ها و SQLite را می‌بندد.</div>
-        </div>
-        <h3>مسیر دادهٔ پیش‌فرض</h3>
-        <p><code>%LOCALAPPDATA%\fnc-rubika\personal.sqlite3</code></p>
-        <p>هر نام سشن فایل، cursor، صف ارسال و کلید idempotency جدا دارد.</p>
-      </article>
-    </section>
-    <section id="multi" class="grid">
-      <article class="card">
-        <h2>چند حساب، یک برنامه</h2>
-        <p>از <code>SessionPool</code> برای شروع و بستن هم‌زمان چند سشن استفاده کنید. دادهٔ اعضا با هم share نمی‌شود.</p>
-        <pre><code>from fnc_rubika import SessionPool
+asyncio.run(main())</code>
+</pre>
+</div>
+<div class="intro-foot">
+<span class="status-dot">
+</span>ورود، پیام، فوروارد و رسانه روی حساب واقعی بررسی شده‌اند.<a href="#validation">جزئیات اعتبارسنجی ↙</a>
+</div>
+</section>
+<section class="doc-section" id="installation" data-search="از نصب تا اولین پیام">
+<div class="section-heading">
+<span class="section-number">01</span>
+<div>
+<h2>از نصب تا اولین پیام</h2>
+<p>محیط اجرای برنامه و محیط نصب پکیج باید یکی باشند.</p>
+</div>
+</div>
+<div class="step-row">
+<span>۱</span>
+<div>
+<h3>محیط مجازی بسازید</h3>
+<p>دستورها را در پوشهٔ مخزن اجرا کنید. Python 3.11 یا بالاتر لازم است؛ نسخهٔ 3.14 در تست‌های فعلی استفاده شده است.</p>
+</div>
+</div>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>نصب محلی از مخزن</span>
+<span class="code-tools">
+<span>PowerShell</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-powershell">python -m venv .venv
+# Windows / PowerShell
+.\.venv\Scripts\python.exe -m pip install -e &quot;.[dev]&quot;</code>
+</pre>
+</div>
+<div class="step-row">
+<span>۲</span>
+<div>
+<h3>یک نام برای سشن انتخاب کنید</h3>
+<p>نمونهٔ بالای صفحه را در <code>main.py</code> ذخیره کنید. در اجرای نخست، کلاینت شماره، کد ورود و در صورت نیاز رمز دومرحله‌ای را در ترمینال می‌پرسد.</p>
+</div>
+</div>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>اجرای برنامه</span>
+<span class="code-tools">
+<span>PowerShell</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-powershell">.\.venv\Scripts\python.exe .\main.py</code>
+</pre>
+</div>
+<div class="callout">
+<span class="callout-icon">i</span>
+<div>
+<strong>نام نصب با نام import متفاوت است.</strong>
+<p>در pip از <code>fnc-rubika</code> و در کد از <code>fnc_rubika</code> استفاده کنید. برای تکمیل کد VS Code، Pylance و همین مفسر venv را انتخاب کنید.</p>
+</div>
+</div>
+</section>
+<section class="doc-section" id="sessions" data-search="یک سشن، یک حساب">
+<div class="section-heading">
+<span class="section-number">02</span>
+<div>
+<h2>یک سشن، یک حساب</h2>
+<p>نام سشن را بدهید؛ کلاینت چرخهٔ عمر اتصال را مدیریت می‌کند.</p>
+</div>
+</div>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>session.py</span>
+<span class="code-tools">
+<span>Python</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-python">from pathlib import Path
+from fnc_rubika import Client
 
-async def main() -&gt; None:
-    async with SessionPool("personal", "business") as sessions:
-        personal = sessions["personal"]
-        business = sessions.get("business")
+session_dir = Path(__file__).resolve().parent / &quot;sessions&quot;
 
-        await personal.messages.send("chat-a", "پیام شخصی")
-        await business.messages.send("chat-b", "پیام کاری")</code></pre>
-        <div class="ok">اگر عضوی هنوز سشن نداشته باشد، pool ابتدا همان حساب را به‌تنهایی login می‌کند تا promptها روی هم نیفتند.</div>
-      </article>
-    </section>
-    <section id="api" class="grid">
-      <article class="card">
-        <h2>مرجع فشردهٔ API عمومی</h2>
-        <div class="table-wrap"><table>
-          <thead><tr><th>عضو</th><th>امضا</th><th>خروجی / نکته</th></tr></thead>
-          <tbody>
-            <tr><td>ساخت</td><td><code>Client(session_name, *, registry=None, contract_path=None, data_dir=None, key_provider=None)</code></td><td>نام ۱–۶۴ کاراکتری؛ یک store مستقل می‌سازد.</td></tr>
-            <tr><td>چرخهٔ عمر</td><td><code>await start()</code> / <code>await aclose()</code></td><td>یا مستقیماً <code>async with Client(name)</code>.</td></tr>
-            <tr><td>ورود</td><td><code>await login(phone, code, *, authenticator=None)</code></td><td>API پیشرفته؛ شماره باید <code>+989…</code> باشد.</td></tr>
-            <tr><td>ورود تعاملی</td><td><code>await login_interactive(*, input_func=input, otp_input_func=getpass)</code></td><td>در نبود سشن، خودکار از context manager اجرا می‌شود؛ Chroma labelها را رنگی می‌کند.</td></tr>
-            <tr><td>پیام</td><td><code>messages.send/reply/edit/delete/forward/history</code></td><td>mutationها durable و قابل بازیابی‌اند.</td></tr>
-            <tr><td>رسانه</td><td><code>media.upload(path, *, content_type=None, wait=True, timeout=60)</code><br><code>media.download(file_id, destination)</code></td><td>در upload فایل تا پایان outbox باید باقی بماند.</td></tr>
-            <tr><td>event</td><td><code>events()</code>، <code>on(type, handler)</code>، <code>run(*, workers=1)</code></td><td>delivery بعد از موفقیت ack می‌شود.</td></tr>
-            <tr><td>صف</td><td><code>wait_operation(operation_id, *, timeout=30)</code></td><td>برای نتیجهٔ <code>wait=False</code>.</td></tr>
-            <tr><td>catalog</td><td><code>api.&lt;namespace&gt;.&lt;operation&gt;(**payload)</code></td><td>فقط operationهای بازبینی‌شده ظاهر می‌شوند.</td></tr>
-          </tbody>
-        </table></div>
-        <p>جدول کامل همهٔ ورودی‌ها، خروجی‌ها، modelها و errorها در <a href="../API_REFERENCE.fa.md">مرجع کامل Markdown</a> است.</p>
-      </article>
-    </section>
-    <section id="events" class="grid two-up">
-      <article class="card">
-        <h2>دریافت قابل‌بازیابی</h2>
-        <pre><code>async with Client("personal") as client:
-    async for delivery in client.events():
-        try:
-            await save_once(
-                delivery.event.event_id,
-                delivery.event.payload,
-            )
-        except Exception:
-            await delivery.nack()
-        else:
-            await delivery.ack()</code></pre>
-        <p>تحویل <span class="code">at-least-once</span> است. <code>event_id</code> را در دیتابیس خودتان unique کنید.</p>
-      </article>
-      <article class="card">
-        <h2>ارسال قابل‌بازیابی</h2>
-        <pre><code>queued = await client.messages.send(
-    "chat-id", "سلام", wait=False
+async with Client(&quot;personal&quot;, data_dir=session_dir) as client:
+    print(client.session_path)
+    await client.send(&quot;YOUR_CHAT_GUID&quot;, &quot;سلام&quot;)</code>
+</pre>
+</div>
+<div class="info-grid">
+<article class="info-card">
+<span class="mini-icon">↳</span>
+<h3>مسیر ذخیره</h3>
+<p>پیش‌فرض، <code>personal.rubika</code> در پوشهٔ اجرای برنامه است. با <code>data_dir</code> مسیر ثابتی انتخاب کنید؛ <code>personal.rubika</code> و <code>personal</code> به یک نام سشن اشاره می‌کنند.</p>
+</article>
+<article class="info-card">
+<span class="mini-icon">⌘</span>
+<h3>ذخیرهٔ رمزگذاری‌شده</h3>
+<p>سشن و صف‌ها در SQLite با AES-256-GCM ذخیره می‌شوند. کلید پیش‌فرض در keyring سیستم‌عامل قرار دارد. فایل و دسترسی به کلید هر دو لازم‌اند.</p>
+</article>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th scope="col">گزینه</th>
+<th scope="col">رفتار</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>session_name</code>
+</td>
+<td>۱ تا ۶۴ کاراکتر؛ شروع با حرف یا عدد و ادامه با حرف، عدد، خط زیر یا خط تیره.</td>
+</tr>
+<tr>
+<td>
+<code>auto_login=True</code>
+</td>
+<td>ورود تعاملی در نبود سشن یا ردشدن قطعی آن؛ کد ورود و رمز با ورودی مخفی دریافت می‌شوند.</td>
+</tr>
+<tr>
+<td>
+<code>auto_login=False</code>
+</td>
+<td>مناسب برنامهٔ بدون اپراتور؛ به‌جای بازکردن prompt، نبود یا رد سشن خطا ایجاد می‌کند.</td>
+</tr>
+<tr>
+<td>
+<code>has_session()</code>
+</td>
+<td>وجود سشن ذخیره‌شده را بررسی می‌کند؛ به‌تنهایی اعتبار آن در سرور را ثابت نمی‌کند.</td>
+</tr>
+<tr>
+<td>
+<code>session_path</code>
+</td>
+<td>مسیر کامل فایل سشن فعلی را می‌دهد.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="small-note">هر فایل سشن را در اختیار یک پردازش قرار دهید. خروج از <code>async with</code> اتصال‌ها و store را می‌بندد؛ یک کلاینت بسته دوباره شروع نمی‌شود.</p>
+</section>
+<section class="doc-section" id="messages" data-search="پیام‌هایی با متدهای خوانا">
+<div class="section-heading">
+<span class="section-number">03</span>
+<div>
+<h2>پیام‌هایی با متدهای خوانا</h2>
+<p>ارسال، پاسخ، ویرایش، حذف و فوروارد مستقیماً روی Client در دسترس‌اند.</p>
+</div>
+</div>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>messages.py</span>
+<span class="code-tools">
+<span>Python</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-python">chat_id = &quot;YOUR_CHAT_GUID&quot;
+
+sent = await client.send(chat_id, &quot;سلام&quot;)
+await client.reply(chat_id, sent.message_id, &quot;پاسخ به این پیام&quot;)
+await client.edit(chat_id, sent.message_id, &quot;متن ویرایش‌شده&quot;)
+
+await client.forward_message(
+    source_chat_id,   # گفت‌وگوی مبدأ
+    message_id,       # شناسهٔ پیام اصلی
+    destination_id,   # گفت‌وگوی مقصد
 )
+
+messages = await client.history(chat_id, limit=20)
+await client.delete(chat_id, sent.message_id)</code>
+</pre>
+</div>
+<div class="callout">
+<span class="callout-icon">↗</span>
+<div>
+<strong>فوروارد، آپلود دوباره نیست.</strong>
+<p>
+<code>forward_message</code> نام خواناتر <code>forward</code> است. شناسهٔ گفت‌وگوی مبدأ، شناسهٔ پیام و گفت‌وگوی مقصد را به همین ترتیب بدهید. برای <code>chat_id</code>، GUID خام یا لینک وب دارای <code>#c=GUID</code> پذیرفته می‌شود.</p>
+</div>
+</div>
+</section>
+<section class="doc-section" id="media" data-search="عکس و فیلم، با کپشن یا بدون آن">
+<div class="section-heading">
+<span class="section-number">04</span>
+<div>
+<h2>عکس و فیلم، با کپشن یا بدون آن</h2>
+<p>فقط مسیر فایل را بدهید؛ مشخصات رسانه و پیش‌نمایش خودکار آماده می‌شوند.</p>
+</div>
+</div>
+<div class="tab-group">
+<div class="tabs" role="tablist" aria-label="مثال‌های ارسال رسانه">
+<button type="button" role="tab" aria-selected="true" aria-controls="photo-panel" id="photo-tab" tabindex="0">ارسال عکس</button>
+<button type="button" role="tab" aria-selected="false" aria-controls="video-panel" id="video-tab" tabindex="-1">ارسال فیلم</button>
+<button type="button" role="tab" aria-selected="false" aria-controls="reuse-panel" id="reuse-tab" tabindex="-1">یک آپلود، چند ارسال</button>
+</div>
+<div id="photo-panel" role="tabpanel" aria-labelledby="photo-tab">
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>photo.py</span>
+<span class="code-tools">
+<span>Python</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-python">from pathlib import Path
+
+photo = Path.home() / &quot;Downloads&quot; / &quot;photo.jpg&quot;
+
+await client.send_photo(chat_id, photo)
+await client.send_photo(chat_id, photo, caption=&quot;کپشن عکس&quot;)
+
+# عکس در پاسخ به یک پیام
+await client.send_photo(
+    chat_id, photo,
+    caption=&quot;این تصویر را ببین&quot;,
+    reply_to_message_id=message_id,
+)</code>
+</pre>
+</div>
+</div>
+<div id="video-panel" role="tabpanel" aria-labelledby="video-tab" hidden>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>video.py</span>
+<span class="code-tools">
+<span>Python</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-python">from pathlib import Path
+
+video = Path.home() / &quot;Downloads&quot; / &quot;video.mp4&quot;
+
+await client.send_video(chat_id, video)
+await client.send_video(
+    chat_id, video,
+    caption=&quot;کپشن فیلم&quot;,
+    timeout=600,
+)</code>
+</pre>
+</div>
+</div>
+<div id="reuse-panel" role="tabpanel" aria-labelledby="reuse-tab" hidden>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>reuse_upload.py</span>
+<span class="code-tools">
+<span>Python</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-python">photo = await client.upload_photo(&quot;photo.jpg&quot;)
+await client.send_photo(chat_id, photo)
+await client.send_photo(chat_id, photo, caption=&quot;همان عکس با کپشن&quot;)
+
+video = await client.upload_video(&quot;video.mp4&quot;, timeout=600)
+await client.send_video(chat_id, video)
+await client.send_video(chat_id, video, caption=&quot;همان فیلم با کپشن&quot;)</code>
+</pre>
+</div>
+</div>
+</div>
+<div class="media-spec">
+<div>
+<span>نسخهٔ ارسالی عکس</span>
+<strong dir="ltr">JPEG · ≤ 1000 × 1000</strong>
+</div>
+<div>
+<span>تامنیل الزامی عکس</span>
+<strong dir="ltr">JPEG · ≤ 40 × 40</strong>
+</div>
+<div>
+<span>فایل اصلی</span>
+<strong>دست‌نخورده روی دیسک</strong>
+</div>
+</div>
+<div class="callout success">
+<span class="callout-icon">✓</span>
+<div>
+<strong>عکس بدون تامنیل معتبر ارسال نمی‌شود.</strong>
+<p>کلاینت یک نسخهٔ JPEG با حفظ نسبت تصویر آماده می‌کند. اگر تامنیل خالی، خراب یا نامعتبر باشد، ارسال عکس متوقف می‌شود؛ مرجع آپلودشده و فراخوانی مستقیم <code>sendMessage</code> با نوع <code>Image</code> هم همین شرط را دارند. فایل ارسالی می‌تواند با فایل اصلی در ابعاد، حجم و پسوند متفاوت باشد.</p>
+</div>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th scope="col">پارامتر</th>
+<th scope="col">پیش‌فرض</th>
+<th scope="col">کاربرد</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>caption</code>
+</td>
+<td>
+<code>None</code>
+</td>
+<td>یک رشته برای کپشن؛ نبود آن یعنی بدون کپشن.</td>
+</tr>
+<tr>
+<td>
+<code>reply_to_message_id</code>
+</td>
+<td>
+<code>None</code>
+</td>
+<td>شناسهٔ پیام برای ارسال رسانه در پاسخ به آن.</td>
+</tr>
+<tr>
+<td>
+<code>wait</code>
+</td>
+<td>
+<code>True</code>
+</td>
+<td>انتظار برای تأیید ارسال؛ با مقدار False عملیات صف برمی‌گردد.</td>
+</tr>
+<tr>
+<td>
+<code>timeout</code>
+</td>
+<td>
+<code>300</code>
+</td>
+<td>ثانیه؛ جداگانه برای آپلود و تأیید ارسال پیام.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="small-note">در رسانه، آپلود حتی با <code>wait=False</code> ابتدا کامل می‌شود. خروجی <code>upload_photo</code> و <code>upload_video</code> از نوع <code>MediaRef</code> است؛ در همان حساب دوباره استفاده کنید. <code>upload</code> عمومی مشخصات مخصوص عکس و فیلم را آماده نمی‌کند.</p>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>download.py</span>
+<span class="code-tools">
+<span>Python</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-python"># دانلود به descriptor کامل یا MediaRef نیاز دارد، نه یک file_id خالی.
+await client.download(uploaded_video, &quot;downloads/video.mp4&quot;)</code>
+</pre>
+</div>
+<p class="small-note">مدت فیلم در descriptor بر حسب میلی‌ثانیه است. استخراج ابعاد و پیش‌نمایش از Pillow و PyAV استفاده می‌کند و در thread انجام می‌شود. در timeout یا لغو انتظار آپلود عکس، نسخهٔ موقت برای عملیات صف‌شده باقی می‌ماند.</p>
+</section>
+<section class="doc-section" id="events" data-search="دریافت و پردازش رویدادها">
+<div class="section-heading">
+<span class="section-number">05</span>
+<div>
+<h2>دریافت و پردازش رویدادها</h2>
+<p>هندلر را ثبت کنید و کلاینت را برای دریافت پیوسته اجرا کنید.</p>
+</div>
+</div>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>events.py</span>
+<span class="code-tools">
+<span>Python</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-python">import asyncio
+from fnc_rubika import Client
+
+async def main():
+    client = Client(&quot;personal&quot;)
+
+    @client.on(&quot;message&quot;)
+    async def on_message(_, delivery):
+        # ساختار payload را مطابق نوع رویداد بررسی کنید.
+        print(delivery.event.event_id)
+
+    async with client:
+        await client.run()
+
+asyncio.run(main())</code>
+</pre>
+</div>
+<p>پس از موفقیت همهٔ هندلرها، رویداد acknowledge می‌شود. خطای هندلر باعث تحویل مجدد می‌شود؛ برای عملیات جانبی مهم، <code>event_id</code> را در ذخیره‌سازی خود یکتا کنید.</p>
+<details class="disclosure">
+<summary>کنترل دستی ack و nack</summary>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>manual_ack.py</span>
+<span class="code-tools">
+<span>Python</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-python">async for delivery in client.events():
+    try:
+        await save_once(
+            delivery.event.event_id,
+            delivery.event.payload,
+        )
+    except Exception:
+        await delivery.nack()
+    else:
+        await delivery.ack()</code>
+</pre>
+</div>
+<p class="small-note">
+<code>save_once</code> در این مثال تابع ذخیره‌سازی برنامهٔ شماست. ذخیرهٔ پایدار رویدادهای دریافت‌شده، بازیابی رویدادهای از‌دست‌رفته هنگام قطع اتصال را تضمین نمی‌کند.</p>
+</details>
+</section>
+<section class="doc-section" id="queue" data-search="تأیید ارسال را جدی بگیرید">
+<div class="section-heading">
+<span class="section-number">06</span>
+<div>
+<h2>تأیید ارسال را جدی بگیرید</h2>
+<p>عملیات تغییردهنده ابتدا در صف پایدار ثبت می‌شوند.</p>
+</div>
+</div>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>outbox.py</span>
+<span class="code-tools">
+<span>Python</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-python">queued = await client.send(chat_id, &quot;سلام&quot;, wait=False)
+
 result = await client.wait_operation(
-    queued.operation_id, timeout=60
-)</code></pre>
-        <p>پس از timeout مبهم، retry تنها برای routeهایی انجام می‌شود که catalog آن‌ها را صریحاً idempotent دانسته باشد.</p>
-      </article>
-    </section>
-    <section id="catalog" class="grid">
-      <article class="card">
-        <h2>endpoint و WebSocket: واقعیت فعلی</h2>
-        <p>کاتالوگ عمومی وب شامل ۲۰۵ نام RPC و ۶ alias است. client.api.getChats در کلاینت هم‌زمان و ناهم‌زمان در دسترس است.</p>
-        <div class="notice">تست‌های محلی و کشف عمومی سرورها پاس شده‌اند. ورود حساب و تمام schemaها هنوز تأیید زنده نشده‌اند. بازیابی خودکار رخدادهای زمان قطع پیاده نشده است.</div>
-        <p>روش ثبت schema، pagination، OTP، handshake، heartbeat، frameهای WS و redaction در <a href="../CONTRACT_CATALOG.fa.md">راهنمای قرارداد</a> آمده است.</p>
-      </article>
-    </section>
-    <section id="security" class="grid two-up">
-      <article class="card"><h2>امنیت</h2><ul><li>کلید خارج از SQLite و در OS keyring است.</li><li>OTP و token log نمی‌شوند.</li><li>سشن منقضی‌شده یا ردشده، ورود مجدد ترمینالی دارد.</li><li>فایل‌های session و salt را commit نکنید.</li></ul></article>
-      <article class="card"><h2>مستندات تکمیلی</h2><ul><li><a href="../USER_GUIDE.fa.md">شروع سریع Markdown</a></li><li><a href="../SESSIONS.fa.md">راهنمای چندسشنی و restart</a></li><li><a href="../API_REFERENCE.fa.md">مرجع کامل API</a></li><li><a href="../CONTRACT_CATALOG.fa.md">سیاست catalog و WebSocket</a></li></ul></article>
-    </section>
-  </main>
-  <footer class="shell footer">fnc-rubika • مستندات آفلاین • داده و قراردادهای حساس را منتشر نکنید.</footer>
+    queued.operation_id,
+    timeout=60,
+)
+print(result)</code>
+</pre>
+</div>
+<div class="state-flow">
+<div>
+<code>queued</code>
+<span>ثبت در صف</span>
+</div>
+<span aria-hidden="true">←</span>
+<div>
+<code>sending</code>
+<span>در حال درخواست</span>
+</div>
+<span aria-hidden="true">←</span>
+<div>
+<code>delivered</code>
+<span>تأیید سرویس</span>
+</div>
+</div>
+<div class="callout warning">
+<span class="callout-icon">!</span>
+<div>
+<strong>timeout به‌تنهایی عملیات را لغو نمی‌کند.</strong>
+<p>اگر نتیجهٔ ارسال نامطمئن باشد، وضعیت می‌تواند <code>unknown</code> شود. پیش از ارسال مجدد، پیام‌ها و وضعیت عملیات را بررسی کنید. در نبود تضمین idempotency، بازپخش خودکار انجام نمی‌شود؛ دریافت شناسهٔ پیام هم به معنی دیده‌شدن آن توسط مخاطب نیست.</p>
+</div>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th scope="col">وضعیت</th>
+<th scope="col">معنی</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>failed</code>
+</td>
+<td>رد قطعی عملیات؛ خطای دسترسی یا payload را بررسی کنید.</td>
+</tr>
+<tr>
+<td>
+<code>unknown</code>
+</td>
+<td>درخواست ممکن است انجام شده باشد؛ ارسال دوباره می‌تواند پیام تکراری بسازد.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section class="doc-section" id="multi" data-search="چند حساب، یا کد بدون asyncio">
+<div class="section-heading">
+<span class="section-number">07</span>
+<div>
+<h2>چند حساب، یا کد بدون asyncio</h2>
+<p>هر سشن داده و صف مستقل دارد؛ رابط sync نیز همان متدهای خوانا را ارائه می‌دهد.</p>
+</div>
+</div>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>multiple_accounts.py</span>
+<span class="code-tools">
+<span>Python</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-python">from fnc_rubika import SessionPool
+
+async with SessionPool(&quot;personal&quot;, &quot;business&quot;, data_dir=&quot;sessions&quot;) as sessions:
+    await sessions[&quot;personal&quot;].send(chat_a, &quot;پیام شخصی&quot;)
+    await sessions[&quot;business&quot;].send(chat_b, &quot;پیام کاری&quot;)</code>
+</pre>
+</div>
+<p>ورود حساب‌های فاقد سشن به‌ترتیب انجام می‌شود تا promptها روی هم نیفتند؛ سپس شروع اتصال‌ها هم‌زمان است. نام‌ها باید یکتا باشند.</p>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>sync_client.py</span>
+<span class="code-tools">
+<span>Python</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-python">from fnc_rubika import Client
+
+with Client(&quot;personal&quot;) as client:
+    message = client.send(&quot;YOUR_CHAT_GUID&quot;, &quot;سلام&quot;)
+    client.send_photo(&quot;YOUR_CHAT_GUID&quot;, &quot;photo.jpg&quot;, caption=&quot;عکس من&quot;)
+    client.send_video(&quot;YOUR_CHAT_GUID&quot;, &quot;video.mp4&quot;)
+    print(message.message_id)</code>
+</pre>
+</div>
+<p class="small-note">در رابط sync از <code>await</code> استفاده نکنید. برای برنامهٔ async، همان <code>async with Client(...)</code> را به‌کار ببرید.</p>
+</section>
+<section class="doc-section" id="reference" data-search="مرجع سریع Client">
+<div class="section-heading">
+<span class="section-number">08</span>
+<div>
+<h2>مرجع سریع Client</h2>
+<p>امضاهای زیر مربوط به رابط async هستند؛ گزینه‌های جزئی سازنده در راهنمای تکمیلی آمده‌اند.</p>
+</div>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th scope="col">نام</th>
+<th scope="col">امضا</th>
+<th scope="col">خروجی</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>Client</code>
+<span class="row-category">سازنده</span>
+</td>
+<td>
+<code>Client(session_name, *, data_dir=None, auto_login=True, key_provider=None, registry=None, contract_path=None, ...)</code>
+</td>
+<td>کلاینت یک حساب</td>
+</tr>
+<tr>
+<td>
+<code>send</code>
+<span class="row-category">پیام</span>
+</td>
+<td>
+<code>send(chat_id, text, *, reply_to_message_id=None, wait=True, timeout=30)</code>
+</td>
+<td>Message / QueuedOperation</td>
+</tr>
+<tr>
+<td>
+<code>reply</code>
+<span class="row-category">پیام</span>
+</td>
+<td>
+<code>reply(chat_id, message_id, text, *, wait=True, timeout=30)</code>
+</td>
+<td>Message / QueuedOperation</td>
+</tr>
+<tr>
+<td>
+<code>edit</code>
+<span class="row-category">پیام</span>
+</td>
+<td>
+<code>edit(chat_id, message_id, text, *, wait=True, timeout=30)</code>
+</td>
+<td>Message / QueuedOperation</td>
+</tr>
+<tr>
+<td>
+<code>delete</code>
+<span class="row-category">پیام</span>
+</td>
+<td>
+<code>delete(chat_id, message_id, *, wait=True, timeout=30)</code>
+</td>
+<td>Mapping / QueuedOperation</td>
+</tr>
+<tr>
+<td>
+<code>forward_message</code>
+<span class="row-category">فوروارد</span>
+</td>
+<td>
+<code>forward_message(from_chat_id, message_id, to_chat_id, *, wait=True, timeout=30)</code>
+</td>
+<td>Message / QueuedOperation</td>
+</tr>
+<tr>
+<td>
+<code>history</code>
+<span class="row-category">خواندن</span>
+</td>
+<td>
+<code>history(chat_id, *, cursor=None, limit=None)</code>
+</td>
+<td>tuple[Message, ...]</td>
+</tr>
+<tr>
+<td>
+<code>send_photo</code>
+<span class="row-category">رسانه</span>
+</td>
+<td>
+<code>send_photo(chat_id, photo, *, caption=None, reply_to_message_id=None, wait=True, timeout=300)</code>
+</td>
+<td>Message / QueuedOperation</td>
+</tr>
+<tr>
+<td>
+<code>send_video</code>
+<span class="row-category">رسانه</span>
+</td>
+<td>
+<code>send_video(chat_id, video, *, caption=None, reply_to_message_id=None, wait=True, timeout=300)</code>
+</td>
+<td>Message / QueuedOperation</td>
+</tr>
+<tr>
+<td>
+<code>upload_photo / upload_video</code>
+<span class="row-category">رسانه</span>
+</td>
+<td>
+<code>upload_photo(path, *, timeout=300)</code>
+<br>
+<code>upload_video(path, *, timeout=300)</code>
+</td>
+<td>MediaRef</td>
+</tr>
+<tr>
+<td>
+<code>upload / download</code>
+<span class="row-category">رسانه</span>
+</td>
+<td>
+<code>upload(path, *, content_type=None, wait=True, timeout=60)</code>
+<br>
+<code>download(file_id, destination)</code>
+</td>
+<td>MediaRef / QueuedOperation در upload</td>
+</tr>
+<tr>
+<td>
+<code>on / run / events</code>
+<span class="row-category">رویداد</span>
+</td>
+<td>
+<code>on(event_type, handler=None)</code>
+<br>
+<code>run(*, workers=1)</code>
+<br>
+<code>events()</code>
+</td>
+<td>ثبت هندلر / اجرا / async iterator</td>
+</tr>
+<tr>
+<td>
+<code>wait_operation</code>
+<span class="row-category">صف</span>
+</td>
+<td>
+<code>wait_operation(operation_id, *, timeout=30)</code>
+</td>
+<td>Mapping پاسخ</td>
+</tr>
+<tr>
+<td>
+<code>start / aclose</code>
+<span class="row-category">چرخهٔ عمر</span>
+</td>
+<td>
+<code>await start()</code>
+<br>
+<code>await aclose()</code>
+</td>
+<td>شروع و بستن اتصال‌ها</td>
+</tr>
+<tr>
+<td>
+<code>login_interactive</code>
+<span class="row-category">ورود</span>
+</td>
+<td>
+<code>login_interactive(*, input_func=None, otp_input_func=None, authenticator=None)</code>
+</td>
+<td>Session</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="model-grid">
+<article>
+<code>Message</code>
+<p>شناسهٔ گفت‌وگو و پیام، متن، شناسهٔ پاسخ و دادهٔ خام.</p>
+</article>
+<article>
+<code>MediaRef</code>
+<p>شناسهٔ فایل، نام، حجم، نوع محتوا و descriptor خام.</p>
+</article>
+<article>
+<code>Delivery</code>
+<p>یک رویداد دریافت‌شده با متدهای ack و nack.</p>
+</article>
+<article>
+<code>QueuedOperation</code>
+<p>شناسهٔ عملیات، نام عملیات و کلید idempotency؛ در <code>fnc_rubika.models</code>.</p>
+</article>
+</div>
+</section>
+<section class="doc-section" id="catalog" data-search="نام دقیق عملیات، در دسترس شما">
+<div class="section-heading">
+<span class="section-number">09</span>
+<div>
+<h2>نام دقیق عملیات، در دسترس شما</h2>
+<p>۲۰۵ نام RPC و ۶ میانبر از کاتالوگ همراه پکیج؛ قابل جست‌وجو در همین صفحه.</p>
+</div>
+</div>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>catalog_api.py</span>
+<span class="code-tools">
+<span>Python</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-python">chats = await client.getChats()
+user = await client.getUserInfo(user_guid=&quot;USER_GUID&quot;)
+
+# دسترسی از namespace کاتالوگ هم ممکن است.
+chats = await client.api.getChats()
+result = await client.api.call(&quot;getChats&quot;, {})</code>
+</pre>
+</div>
+<p>متدهای RPC با نام اصلی خود تعریف شده‌اند. فهرست نام‌ها به معنی تأیید زندهٔ همهٔ schemaها نیست؛ فیلدهای جدول فقط ورودی‌های مشاهده‌شده در منبع وب هستند.</p>
+<div class="catalog-controls">
+<label class="search-field">
+<span aria-hidden="true">⌕</span>
+<input id="method-search" type="search" placeholder="مثلاً sendMessage یا getChats" aria-label="جست‌وجو در متدهای RPC" dir="auto">
+</label>
+<select id="method-kind" aria-label="فیلتر نوع عملیات">
+<option value="all">همهٔ عملیات</option>
+<option value="read">خواندن</option>
+<option value="mutation">تغییر</option>
+</select>
+<span id="method-count" role="status">۲۱۱ عملیات</span>
+</div>
+<div class="catalog-table table-wrap">
+<table>
+<thead>
+<tr>
+<th scope="col">عملیات</th>
+<th scope="col">نوع</th>
+<th scope="col">فیلدهای مشاهده‌شده</th>
+</tr>
+</thead>
+<tbody id="method-list">
+<tr data-method="abortsetrecoveryemail" data-kind="mutation">
+<td>
+<code>abortSetRecoveryEmail</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>password</code>
+</td>
+</tr>
+<tr data-method="aborttwostepsetup" data-kind="mutation">
+<td>
+<code>abortTwoStepSetup</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="actiononjoinrequest" data-kind="mutation">
+<td>
+<code>actionOnJoinRequest</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="actiononmessagereaction" data-kind="mutation">
+<td>
+<code>actionOnMessageReaction</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="actiononstickerset" data-kind="mutation">
+<td>
+<code>actionOnStickerSet</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>action, sticker_set_id</code>
+</td>
+</tr>
+<tr data-method="actiononunconfirmedsession" data-kind="mutation">
+<td>
+<code>actionOnUnconfirmedSession</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>action, unconfirmed_session_key</code>
+</td>
+</tr>
+<tr data-method="addaddressbook" data-kind="mutation">
+<td>
+<code>addAddressBook</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="addchannel" data-kind="mutation">
+<td>
+<code>addChannel</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="addchannelmembers" data-kind="mutation">
+<td>
+<code>addChannelMembers</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>channel_guid, member_guids</code>
+</td>
+</tr>
+<tr data-method="addfolder" data-kind="mutation">
+<td>
+<code>addFolder</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="addgroup" data-kind="mutation">
+<td>
+<code>addGroup</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="addgroupmembers" data-kind="mutation">
+<td>
+<code>addGroupMembers</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>group_guid, member_guids</code>
+</td>
+</tr>
+<tr data-method="addlivecomment" data-kind="mutation">
+<td>
+<code>addLiveComment</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="addsetwallpaper" data-kind="mutation">
+<td>
+<code>addSetWallpaper</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>main_file_id, thumbnail_file_id</code>
+</td>
+</tr>
+<tr data-method="addtomygifset" data-kind="mutation">
+<td>
+<code>addToMyGifSet</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>message_id, object_guid</code>
+</td>
+</tr>
+<tr data-method="banchannelmember" data-kind="mutation">
+<td>
+<code>banChannelMember</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>action, channel_guid, member_guid</code>
+</td>
+</tr>
+<tr data-method="bangroupmember" data-kind="mutation">
+<td>
+<code>banGroupMember</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>action, group_guid, member_guid</code>
+</td>
+</tr>
+<tr data-method="cancelchangeobjectowner" data-kind="mutation">
+<td>
+<code>cancelChangeObjectOwner</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>object_guid</code>
+</td>
+</tr>
+<tr data-method="changepassword" data-kind="mutation">
+<td>
+<code>changePassword</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="channelpreviewbyjoinlink" data-kind="read">
+<td>
+<code>channelPreviewByJoinLink</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>hash_link</code>
+</td>
+</tr>
+<tr data-method="checkchannelusername" data-kind="read">
+<td>
+<code>checkChannelUsername</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>username</code>
+</td>
+</tr>
+<tr data-method="checktwosteppasscode" data-kind="read">
+<td>
+<code>checkTwoStepPasscode</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>password</code>
+</td>
+</tr>
+<tr data-method="checkuserusername" data-kind="read">
+<td>
+<code>checkUserUsername</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>username</code>
+</td>
+</tr>
+<tr data-method="cleardrafts" data-kind="mutation">
+<td>
+<code>clearDrafts</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>action, object_guid</code>
+</td>
+</tr>
+<tr data-method="clickmessageurl" data-kind="mutation">
+<td>
+<code>clickMessageUrl</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="creategroupvoicechat" data-kind="mutation">
+<td>
+<code>createGroupVoiceChat</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>chat_guid</code>
+</td>
+</tr>
+<tr data-method="createjoinlink" data-kind="mutation">
+<td>
+<code>createJoinLink</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="createpoll" data-kind="mutation">
+<td>
+<code>createPoll</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="deleteavatar" data-kind="mutation">
+<td>
+<code>deleteAvatar</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>avatar_id, object_guid</code>
+</td>
+</tr>
+<tr data-method="deletebotchat" data-kind="mutation">
+<td>
+<code>deleteBotChat</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>bot_guid, last_deleted_message_id</code>
+</td>
+</tr>
+<tr data-method="deletechathistory" data-kind="mutation">
+<td>
+<code>deleteChatHistory</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>last_message_id, object_guid</code>
+</td>
+</tr>
+<tr data-method="deletecontact" data-kind="mutation">
+<td>
+<code>deleteContact</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>user_guid</code>
+</td>
+</tr>
+<tr data-method="deletefolder" data-kind="mutation">
+<td>
+<code>deleteFolder</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>folder_id</code>
+</td>
+</tr>
+<tr data-method="deletemessages" data-kind="mutation">
+<td>
+<code>deleteMessages</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="deletenoaccessgroupchat" data-kind="mutation">
+<td>
+<code>deleteNoAccessGroupChat</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>group_guid</code>
+</td>
+</tr>
+<tr data-method="deleterevokedjoinlink" data-kind="mutation">
+<td>
+<code>deleteRevokedJoinLink</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="deleteservicechat" data-kind="mutation">
+<td>
+<code>deleteServiceChat</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>last_deleted_message_id, service_guid</code>
+</td>
+</tr>
+<tr data-method="deleteuserchat" data-kind="mutation">
+<td>
+<code>deleteUserChat</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>last_deleted_message_id, user_guid</code>
+</td>
+</tr>
+<tr data-method="discardgroupvoicechat" data-kind="mutation">
+<td>
+<code>discardGroupVoiceChat</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>chat_guid, voice_chat_id</code>
+</td>
+</tr>
+<tr data-method="editchannelinfo" data-kind="mutation">
+<td>
+<code>editChannelInfo</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="editfolder" data-kind="mutation">
+<td>
+<code>editFolder</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="editgroupinfo" data-kind="mutation">
+<td>
+<code>editGroupInfo</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="editjoinlink" data-kind="mutation">
+<td>
+<code>editJoinLink</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="editmessage" data-kind="mutation">
+<td>
+<code>editMessage</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="forwardmessages" data-kind="mutation">
+<td>
+<code>forwardMessages</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getabsobjects" data-kind="read">
+<td>
+<code>getAbsObjects</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>objects_guids</code>
+</td>
+</tr>
+<tr data-method="getalldrafts" data-kind="read">
+<td>
+<code>getAllDrafts</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getappearancesetting" data-kind="read">
+<td>
+<code>getAppearanceSetting</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getavailablereactions" data-kind="read">
+<td>
+<code>getAvailableReactions</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getavatars" data-kind="read">
+<td>
+<code>getAvatars</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>object_guid</code>
+</td>
+</tr>
+<tr data-method="getbannedchannelmembers" data-kind="read">
+<td>
+<code>getBannedChannelMembers</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>channel_guid, search_text, start_id</code>
+</td>
+</tr>
+<tr data-method="getbannedgroupmembers" data-kind="read">
+<td>
+<code>getBannedGroupMembers</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>group_guid, search_text, start_id</code>
+</td>
+</tr>
+<tr data-method="getbarcodeaction" data-kind="read">
+<td>
+<code>getBarcodeAction</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getbaseinfo" data-kind="read">
+<td>
+<code>getBaseInfo</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getblockedusers" data-kind="read">
+<td>
+<code>getBlockedUsers</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>start_id</code>
+</td>
+</tr>
+<tr data-method="getbotinfo" data-kind="read">
+<td>
+<code>getBotInfo</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>bot_guid</code>
+</td>
+</tr>
+<tr data-method="getchanneladminaccesslist" data-kind="read">
+<td>
+<code>getChannelAdminAccessList</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>channel_guid, member_guid</code>
+</td>
+</tr>
+<tr data-method="getchanneladminmembers" data-kind="read">
+<td>
+<code>getChannelAdminMembers</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>channel_guid, search_text, start_id</code>
+</td>
+</tr>
+<tr data-method="getchannelallmembers" data-kind="read">
+<td>
+<code>getChannelAllMembers</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>channel_guid, search_text, start_id</code>
+</td>
+</tr>
+<tr data-method="getchannelinfo" data-kind="read">
+<td>
+<code>getChannelInfo</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>channel_guid</code>
+</td>
+</tr>
+<tr data-method="getchannellink" data-kind="read">
+<td>
+<code>getChannelLink</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>channel_guid</code>
+</td>
+</tr>
+<tr data-method="getchatads" data-kind="read">
+<td>
+<code>getChatAds</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>state</code>
+</td>
+</tr>
+<tr data-method="getchatreaction" data-kind="read">
+<td>
+<code>getChatReaction</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getchats" data-kind="read">
+<td>
+<code>getChats</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>start_id</code>
+</td>
+</tr>
+<tr data-method="getchatsbyid" data-kind="read">
+<td>
+<code>getChatsByID</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>object_guids</code>
+</td>
+</tr>
+<tr data-method="getchatsupdates" data-kind="read">
+<td>
+<code>getChatsUpdates</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>state</code>
+</td>
+</tr>
+<tr data-method="getcommongroups" data-kind="read">
+<td>
+<code>getCommonGroups</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>user_guid</code>
+</td>
+</tr>
+<tr data-method="getcontacts" data-kind="read">
+<td>
+<code>getContacts</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>start_id</code>
+</td>
+</tr>
+<tr data-method="getcontactslastonline" data-kind="read">
+<td>
+<code>getContactsLastOnline</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>user_guids</code>
+</td>
+</tr>
+<tr data-method="getcontactsupdates" data-kind="read">
+<td>
+<code>getContactsUpdates</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>state</code>
+</td>
+</tr>
+<tr data-method="getdcs" data-kind="read">
+<td>
+<code>getDCs</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getdisplayasingroupvoicechat" data-kind="read">
+<td>
+<code>getDisplayAsInGroupVoiceChat</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>chat_guid, start_id</code>
+</td>
+</tr>
+<tr data-method="getfolders" data-kind="read">
+<td>
+<code>getFolders</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>last_state</code>
+</td>
+</tr>
+<tr data-method="getgroupadminaccesslist" data-kind="read">
+<td>
+<code>getGroupAdminAccessList</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>group_guid, member_guid</code>
+</td>
+</tr>
+<tr data-method="getgroupadminmembers" data-kind="read">
+<td>
+<code>getGroupAdminMembers</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>group_guid, search_text, start_id</code>
+</td>
+</tr>
+<tr data-method="getgroupallmembers" data-kind="read">
+<td>
+<code>getGroupAllMembers</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>group_guid, search_text, start_id</code>
+</td>
+</tr>
+<tr data-method="getgroupdefaultaccess" data-kind="read">
+<td>
+<code>getGroupDefaultAccess</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>group_guid</code>
+</td>
+</tr>
+<tr data-method="getgroupinfo" data-kind="read">
+<td>
+<code>getGroupInfo</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>group_guid</code>
+</td>
+</tr>
+<tr data-method="getgrouplink" data-kind="read">
+<td>
+<code>getGroupLink</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>group_guid</code>
+</td>
+</tr>
+<tr data-method="getgroupmentionlist" data-kind="read">
+<td>
+<code>getGroupMentionList</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getgroupmessagereadparticipants" data-kind="read">
+<td>
+<code>getGroupMessageReadParticipants</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>group_guid, message_id</code>
+</td>
+</tr>
+<tr data-method="getgrouponlinecount" data-kind="read">
+<td>
+<code>getGroupOnlineCount</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>group_guid</code>
+</td>
+</tr>
+<tr data-method="getgroupvoicechat" data-kind="read">
+<td>
+<code>getGroupVoiceChat</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>chat_guid, voice_chat_id</code>
+</td>
+</tr>
+<tr data-method="getgroupvoicechatparticipants" data-kind="read">
+<td>
+<code>getGroupVoiceChatParticipants</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>chat_guid, start_id, voice_chat_id</code>
+</td>
+</tr>
+<tr data-method="getgroupvoicechatparticipantsbyobjectguids" data-kind="read">
+<td>
+<code>getGroupVoiceChatParticipantsByObjectGuids</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>chat_guid, object_guids, voice_chat_id</code>
+</td>
+</tr>
+<tr data-method="getgroupvoicechatupdates" data-kind="read">
+<td>
+<code>getGroupVoiceChatUpdates</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>chat_guid, state, voice_chat_id</code>
+</td>
+</tr>
+<tr data-method="getjoinlinkuserjoined" data-kind="read">
+<td>
+<code>getJoinLinkUserJoined</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getjoinlinks" data-kind="read">
+<td>
+<code>getJoinLinks</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>creator_guid, object_guid</code>
+</td>
+</tr>
+<tr data-method="getjoinrequests" data-kind="read">
+<td>
+<code>getJoinRequests</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getlandingpage" data-kind="read">
+<td>
+<code>getLandingPage</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>address</code>
+</td>
+</tr>
+<tr data-method="getlinkfromappurl" data-kind="read">
+<td>
+<code>getLinkFromAppUrl</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>app_url</code>
+</td>
+</tr>
+<tr data-method="getlivecomments" data-kind="read">
+<td>
+<code>getLiveComments</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getliveplayurl" data-kind="read">
+<td>
+<code>getLivePlayUrl</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>access_token, live_id</code>
+</td>
+</tr>
+<tr data-method="getlivestatus" data-kind="read">
+<td>
+<code>getLiveStatus</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>access_token, live_id</code>
+</td>
+</tr>
+<tr data-method="getliveviewers" data-kind="read">
+<td>
+<code>getLiveViewers</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>live_id, start_id</code>
+</td>
+</tr>
+<tr data-method="getmapview" data-kind="read">
+<td>
+<code>getMapView</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>location</code>
+</td>
+</tr>
+<tr data-method="getmessagereactions" data-kind="read">
+<td>
+<code>getMessageReactions</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getmessageshareurl" data-kind="read">
+<td>
+<code>getMessageShareUrl</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>message_id, object_guid</code>
+</td>
+</tr>
+<tr data-method="getmessages" data-kind="read">
+<td>
+<code>getMessages</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getmessagesbyid" data-kind="read">
+<td>
+<code>getMessagesByID</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>message_ids, object_guid</code>
+</td>
+</tr>
+<tr data-method="getmessagesinterval" data-kind="read">
+<td>
+<code>getMessagesInterval</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>filter_type, middle_message_id, object_guid</code>
+</td>
+</tr>
+<tr data-method="getmessagesupdates" data-kind="read">
+<td>
+<code>getMessagesUpdates</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>object_guid, state</code>
+</td>
+</tr>
+<tr data-method="getmyarchivedstickersets" data-kind="read">
+<td>
+<code>getMyArchivedStickerSets</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>search_text, start_id</code>
+</td>
+</tr>
+<tr data-method="getmygifset" data-kind="read">
+<td>
+<code>getMyGifSet</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getmysessions" data-kind="read">
+<td>
+<code>getMySessions</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getmystickersets" data-kind="read">
+<td>
+<code>getMyStickerSets</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getobjectbyusername" data-kind="read">
+<td>
+<code>getObjectByUsername</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>username</code>
+</td>
+</tr>
+<tr data-method="getpaymentinfo" data-kind="read">
+<td>
+<code>getPaymentInfo</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>payment_id</code>
+</td>
+</tr>
+<tr data-method="getpendingobjectowner" data-kind="read">
+<td>
+<code>getPendingObjectOwner</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>object_guid</code>
+</td>
+</tr>
+<tr data-method="getpolloptionvoters" data-kind="read">
+<td>
+<code>getPollOptionVoters</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>poll_id, selection_index, start_id</code>
+</td>
+</tr>
+<tr data-method="getpollstatus" data-kind="read">
+<td>
+<code>getPollStatus</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>poll_id</code>
+</td>
+</tr>
+<tr data-method="getprivacysetting" data-kind="read">
+<td>
+<code>getPrivacySetting</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getprofilelinkitems" data-kind="read">
+<td>
+<code>getProfileLinkItems</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>object_guid</code>
+</td>
+</tr>
+<tr data-method="getprofileposts" data-kind="read">
+<td>
+<code>getProfilePosts</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>equal, limit, max_id, min_id, sort, target_profile_id</code>
+</td>
+</tr>
+<tr data-method="getprofilesstorylist" data-kind="read">
+<td>
+<code>getProfilesStoryList</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getrelatedobjects" data-kind="read">
+<td>
+<code>getRelatedObjects</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>object_guid, start_id</code>
+</td>
+</tr>
+<tr data-method="getselection" data-kind="read">
+<td>
+<code>getSelection</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>bot_guid, selection_id, start_id</code>
+</td>
+</tr>
+<tr data-method="getserviceinfo" data-kind="read">
+<td>
+<code>getServiceInfo</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>service_guid</code>
+</td>
+</tr>
+<tr data-method="getstickersetbyid" data-kind="read">
+<td>
+<code>getStickerSetByID</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>sticker_set_id</code>
+</td>
+</tr>
+<tr data-method="getstickersetting" data-kind="read">
+<td>
+<code>getStickerSetting</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getstickersbyemoji" data-kind="read">
+<td>
+<code>getStickersByEmoji</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>emoji_character, suggest_by</code>
+</td>
+</tr>
+<tr data-method="getstickersbysetids" data-kind="read">
+<td>
+<code>getStickersBySetIDs</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>sticker_set_ids</code>
+</td>
+</tr>
+<tr data-method="getsuggestedfolders" data-kind="read">
+<td>
+<code>getSuggestedFolders</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="gettime" data-kind="read">
+<td>
+<code>getTime</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="gettranscription" data-kind="read">
+<td>
+<code>getTranscription</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>message_id, transcription_id</code>
+</td>
+</tr>
+<tr data-method="gettrendstickersets" data-kind="read">
+<td>
+<code>getTrendStickerSets</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>start_id</code>
+</td>
+</tr>
+<tr data-method="gettwopasscodestatus" data-kind="read">
+<td>
+<code>getTwoPasscodeStatus</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getunconfirmedsessions" data-kind="read">
+<td>
+<code>getUnconfirmedSessions</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getuserinfo" data-kind="read">
+<td>
+<code>getUserInfo</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>user_guid</code>
+</td>
+</tr>
+<tr data-method="getusersetting" data-kind="read">
+<td>
+<code>getUserSetting</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getwallettransfermessage" data-kind="read">
+<td>
+<code>getWalletTransferMessage</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getwallpapers" data-kind="read">
+<td>
+<code>getWallpapers</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="getwebappfunction" data-kind="read">
+<td>
+<code>getWebAppFunction</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>app_id</code>
+</td>
+</tr>
+<tr data-method="getlinkobject" data-kind="read">
+<td>
+<code>getlinkObject</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>share_string</code>
+</td>
+</tr>
+<tr data-method="grouppreviewbyjoinlink" data-kind="read">
+<td>
+<code>groupPreviewByJoinLink</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>hash_link</code>
+</td>
+</tr>
+<tr data-method="handshake" data-kind="mutation">
+<td>
+<code>handShake</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="joinchannelaction" data-kind="mutation">
+<td>
+<code>joinChannelAction</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>action, channel_guid</code>
+</td>
+</tr>
+<tr data-method="joinchannelbylink" data-kind="mutation">
+<td>
+<code>joinChannelByLink</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>hash_link</code>
+</td>
+</tr>
+<tr data-method="joingroup" data-kind="mutation">
+<td>
+<code>joinGroup</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>hash_link</code>
+</td>
+</tr>
+<tr data-method="joingroupvoicechat" data-kind="mutation">
+<td>
+<code>joinGroupVoiceChat</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="leavegroup" data-kind="mutation">
+<td>
+<code>leaveGroup</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>group_guid</code>
+</td>
+</tr>
+<tr data-method="leavegroupvoicechat" data-kind="mutation">
+<td>
+<code>leaveGroupVoiceChat</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>chat_guid, voice_chat_id</code>
+</td>
+</tr>
+<tr data-method="logindisabletwostep" data-kind="mutation">
+<td>
+<code>loginDisableTwoStep</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="logintwostepforgetpassword" data-kind="mutation">
+<td>
+<code>loginTwoStepForgetPassword</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>phone_number</code>
+</td>
+</tr>
+<tr data-method="logout" data-kind="mutation">
+<td>
+<code>logout</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="media.upload" data-kind="mutation">
+<td>
+<code>media.upload</code>
+<span class="row-category">میانبر</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>file_name, mime, size</code>
+</td>
+</tr>
+<tr data-method="messages.delete" data-kind="mutation">
+<td>
+<code>messages.delete</code>
+<span class="row-category">میانبر</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="messages.edit" data-kind="mutation">
+<td>
+<code>messages.edit</code>
+<span class="row-category">میانبر</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="messages.forward" data-kind="mutation">
+<td>
+<code>messages.forward</code>
+<span class="row-category">میانبر</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="messages.history" data-kind="read">
+<td>
+<code>messages.history</code>
+<span class="row-category">میانبر</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="messages.send" data-kind="mutation">
+<td>
+<code>messages.send</code>
+<span class="row-category">میانبر</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="registerdevice" data-kind="mutation">
+<td>
+<code>registerDevice</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="removechannel" data-kind="mutation">
+<td>
+<code>removeChannel</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>channel_guid</code>
+</td>
+</tr>
+<tr data-method="removegroup" data-kind="mutation">
+<td>
+<code>removeGroup</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>group_guid</code>
+</td>
+</tr>
+<tr data-method="replyrequestobjectowner" data-kind="mutation">
+<td>
+<code>replyRequestObjectOwner</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="reportobject" data-kind="mutation">
+<td>
+<code>reportObject</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="requestchangeobjectowner" data-kind="mutation">
+<td>
+<code>requestChangeObjectOwner</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="requestchangephonenumber" data-kind="mutation">
+<td>
+<code>requestChangePhoneNumber</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>new_phone_number</code>
+</td>
+</tr>
+<tr data-method="requestdeleteaccount" data-kind="mutation">
+<td>
+<code>requestDeleteAccount</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="requestrecoveryemail" data-kind="mutation">
+<td>
+<code>requestRecoveryEmail</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="requestsendfile" data-kind="mutation">
+<td>
+<code>requestSendFile</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>file_name, mime, size</code>
+</td>
+</tr>
+<tr data-method="resendcoderecoveryemail" data-kind="mutation">
+<td>
+<code>resendCodeRecoveryEmail</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>password</code>
+</td>
+</tr>
+<tr data-method="resetcontacts" data-kind="mutation">
+<td>
+<code>resetContacts</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="resetwallpapers" data-kind="mutation">
+<td>
+<code>resetWallpapers</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="revokejoinlink" data-kind="mutation">
+<td>
+<code>revokeJoinLink</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>join_link, object_guid</code>
+</td>
+</tr>
+<tr data-method="searchchatmessages" data-kind="read">
+<td>
+<code>searchChatMessages</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="searchglobalmessages" data-kind="read">
+<td>
+<code>searchGlobalMessages</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="searchglobalobjects" data-kind="read">
+<td>
+<code>searchGlobalObjects</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="searchselection" data-kind="read">
+<td>
+<code>searchSelection</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>bot_guid, limit, search_text, selection_id</code>
+</td>
+</tr>
+<tr data-method="searchstickers" data-kind="read">
+<td>
+<code>searchStickers</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill read">خواندن</span>
+</td>
+<td>
+<code>search_text, start_id</code>
+</td>
+</tr>
+<tr data-method="seenchats" data-kind="mutation">
+<td>
+<code>seenChats</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="sendchatactivity" data-kind="mutation">
+<td>
+<code>sendChatActivity</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>activity, object_guid</code>
+</td>
+</tr>
+<tr data-method="sendcode" data-kind="mutation">
+<td>
+<code>sendCode</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="sendgroupvoicechatactivity" data-kind="mutation">
+<td>
+<code>sendGroupVoiceChatActivity</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="sendlive" data-kind="mutation">
+<td>
+<code>sendLive</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="sendmessage" data-kind="mutation">
+<td>
+<code>sendMessage</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="sendmessageapicall" data-kind="mutation">
+<td>
+<code>sendMessageAPICall</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="sendrubinopost" data-kind="mutation">
+<td>
+<code>sendRubinoPost</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="sendwallettransfermessage" data-kind="mutation">
+<td>
+<code>sendWalletTransferMessage</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="setactionchat" data-kind="mutation">
+<td>
+<code>setActionChat</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>action, duration, object_guid</code>
+</td>
+</tr>
+<tr data-method="setaskspamaction" data-kind="mutation">
+<td>
+<code>setAskSpamAction</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="setblockuser" data-kind="mutation">
+<td>
+<code>setBlockUser</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>action, user_guid</code>
+</td>
+</tr>
+<tr data-method="setchanneladmin" data-kind="mutation">
+<td>
+<code>setChannelAdmin</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="setchannellink" data-kind="mutation">
+<td>
+<code>setChannelLink</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>channel_guid</code>
+</td>
+</tr>
+<tr data-method="setchatusetime" data-kind="mutation">
+<td>
+<code>setChatUseTime</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>object_guid, time</code>
+</td>
+</tr>
+<tr data-method="setgroupadmin" data-kind="mutation">
+<td>
+<code>setGroupAdmin</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="setgroupdefaultaccess" data-kind="mutation">
+<td>
+<code>setGroupDefaultAccess</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>access_list, group_guid</code>
+</td>
+</tr>
+<tr data-method="setgrouplink" data-kind="mutation">
+<td>
+<code>setGroupLink</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>group_guid</code>
+</td>
+</tr>
+<tr data-method="setgroupvoicechatsetting" data-kind="mutation">
+<td>
+<code>setGroupVoiceChatSetting</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="setgroupvoicechatstate" data-kind="mutation">
+<td>
+<code>setGroupVoiceChatState</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="setlivesetting" data-kind="mutation">
+<td>
+<code>setLiveSetting</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="setpinchatinfolder" data-kind="mutation">
+<td>
+<code>setPinChatInFolder</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>action, folder_id, object_guid</code>
+</td>
+</tr>
+<tr data-method="setpinmessage" data-kind="mutation">
+<td>
+<code>setPinMessage</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="setpublickey" data-kind="mutation">
+<td>
+<code>setPublicKey</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="setsetting" data-kind="mutation">
+<td>
+<code>setSetting</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>settings, update_parameters</code>
+</td>
+</tr>
+<tr data-method="setuptwostepverification" data-kind="mutation">
+<td>
+<code>setupTwoStepVerification</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="signin" data-kind="mutation">
+<td>
+<code>signIn</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="stopbot" data-kind="mutation">
+<td>
+<code>stopBot</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>bot_guid</code>
+</td>
+</tr>
+<tr data-method="stoplive" data-kind="mutation">
+<td>
+<code>stopLive</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>live_id</code>
+</td>
+</tr>
+<tr data-method="terminateothersessions" data-kind="mutation">
+<td>
+<code>terminateOtherSessions</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="terminatesession" data-kind="mutation">
+<td>
+<code>terminateSession</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>session_key</code>
+</td>
+</tr>
+<tr data-method="transcribevoice" data-kind="mutation">
+<td>
+<code>transcribeVoice</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>message_id, object_guid</code>
+</td>
+</tr>
+<tr data-method="turnofftwostep" data-kind="mutation">
+<td>
+<code>turnOffTwoStep</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>password</code>
+</td>
+</tr>
+<tr data-method="unregisterdevice" data-kind="mutation">
+<td>
+<code>unregisterDevice</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="updatechannelusername" data-kind="mutation">
+<td>
+<code>updateChannelUsername</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>channel_guid, username</code>
+</td>
+</tr>
+<tr data-method="updateprofile" data-kind="mutation">
+<td>
+<code>updateProfile</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="updateusername" data-kind="mutation">
+<td>
+<code>updateUsername</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>username</code>
+</td>
+</tr>
+<tr data-method="uploadavatar" data-kind="mutation">
+<td>
+<code>uploadAvatar</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="verifychangephonenumber" data-kind="mutation">
+<td>
+<code>verifyChangePhoneNumber</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>code, hash</code>
+</td>
+</tr>
+<tr data-method="verifyrecoveryemail" data-kind="mutation">
+<td>
+<code>verifyRecoveryEmail</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>schema کامل ثبت نشده</code>
+</td>
+</tr>
+<tr data-method="votepoll" data-kind="mutation">
+<td>
+<code>votePoll</code>
+<span class="row-category">RPC</span>
+</td>
+<td>
+<span class="kind-pill mutation">تغییر</span>
+</td>
+<td>
+<code>poll_id, selection_index</code>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="empty-state" id="method-empty" hidden>عملیاتی با این جست‌وجو پیدا نشد.</p>
+</div>
+</section>
+<section class="doc-section" id="errors" data-search="وقتی چیزی طبق انتظار پیش نمی‌رود">
+<div class="section-heading">
+<span class="section-number">10</span>
+<div>
+<h2>وقتی چیزی طبق انتظار پیش نمی‌رود</h2>
+<p>خطا را براساس مرحلهٔ وقوع آن بررسی کنید؛ ورود، آپلود و ارسال مراحل جدا هستند.</p>
+</div>
+</div>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th scope="col">خطا</th>
+<th scope="col">معنی و اقدام</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>ModuleNotFoundError</code>
+</td>
+<td>پکیج در مفسر دیگری نصب شده است. نصب را با همان فایل python محیط اجرا انجام دهید.</td>
+</tr>
+<tr>
+<td>
+<code>ValueError</code> با thumbnail</td>
+<td>پیش‌نمایش عکس خالی، خراب یا خارج از اندازهٔ مجاز است. مسیر معتبر یا مرجع upload_photo را بدهید.</td>
+</tr>
+<tr>
+<td>
+<code>AccessDeniedError</code>
+</td>
+<td>دسترسی به عملیات رد شده است؛ GUID مقصد و مجوز حساب را بررسی کنید. ERROR_GENERIC/INVALID_AUTH به‌تنهایی انقضای سشن را ثابت نمی‌کند.</td>
+</tr>
+<tr>
+<td>
+<code>SessionExpiredError</code>
+</td>
+<td>سشن رد یا منقضی شده است. در حالت auto_login، ورود مجدد اجرا می‌شود؛ در حالت بدون prompt، ورود را جدا انجام دهید.</td>
+</tr>
+<tr>
+<td>
+<code>SessionRenewalError</code>
+</td>
+<td>ورود مجدد سشن قابل استفاده نساخته است؛ علت گزارش‌شده و محدودیت‌های حساب را بررسی کنید.</td>
+</tr>
+<tr>
+<td>
+<code>OperationUnknownError</code>
+</td>
+<td>نتیجهٔ عملیات قطعی نیست. پیش از تکرار، وضعیت پیام و صف را بررسی کنید.</td>
+</tr>
+<tr>
+<td>
+<code>RemoteOperationError</code>
+</td>
+<td>عملیات با پاسخ قطعی سرور رد شده است؛ payload و مجوزها را بررسی کنید.</td>
+</tr>
+<tr>
+<td>
+<code>SecurityConfigurationError</code>
+</td>
+<td>keyring، کلید یا فایل رمزگذاری‌شده قابل استفاده نیست.</td>
+</tr>
+<tr>
+<td>
+<code>ContractError</code>
+</td>
+<td>کاتالوگ یا قرارداد درخواست ناسازگار است.</td>
+</tr>
+<tr>
+<td>
+<code>TransportError / RateLimitError</code>
+</td>
+<td>مشکل اتصال یا محدودیت نرخ؛ سیاست retry و تأخیر کلاینت را در نظر بگیرید.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="disclosure">
+<summary>عیب‌یابی سشن و مقصد بدون ارسال پیام</summary>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>بررسی خواندن حساب و مقصد</span>
+<span class="code-tools">
+<span>PowerShell</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-powershell">python -m fnc_rubika diagnose personal --chat-id YOUR_CHAT_GUID</code>
+</pre>
+</div>
+<p>این فرمان از سشن موجود استفاده می‌کند و صف ارسال یا دریافت realtime را شروع نمی‌کند. گزارش JSON شامل وضعیت دسترسی است؛ موفقیت خواندن، موفقیت ارسال را به‌تنهایی تضمین نمی‌کند.</p>
+</details>
+<details class="disclosure">
+<summary>VS Code پکیج یا متدها را نمی‌شناسد</summary>
+<ol>
+<li>افزونه‌های Python و Pylance را نصب کنید.</li>
+<li>با <code>Python: Select Interpreter</code> مفسر همین محیط مجازی را انتخاب کنید.</li>
+<li>پکیج را با همان مفسر نصب کنید و در صورت نیاز <code>Developer: Reload Window</code> را اجرا کنید.</li>
+</ol>
+<div class="code-card">
+<div class="code-toolbar">
+<span class="file-label">
+<i>
+</i>بررسی محیط فعال</span>
+<span class="code-tools">
+<span>PowerShell</span>
+<button class="copy-button" type="button" aria-label="کپی کد">کپی کد</button>
+</span>
+</div>
+<pre tabindex="0">
+<code class="language-powershell">python -c &quot;import sys, fnc_rubika; print(sys.executable); print(fnc_rubika.__file__)&quot;
+python -m pip check</code>
+</pre>
+</div>
+</details>
+<details class="disclosure">
+<summary>حفظ امنیت فایل سشن</summary>
+<p>فایل سشن، کلید، OTP و رمز دومرحله‌ای را در مخزن یا لاگ عمومی قرار ندهید. در سطح پایین <code>AsyncClient</code>، بستن store تزریق‌شده مسئولیت فراخوان است؛ <code>Client</code> store خودش را می‌بندد.</p>
+</details>
+</section>
+<section class="doc-section" id="resources" data-search="برای ادامهٔ مسیر">
+<div class="section-heading">
+<span class="section-number">11</span>
+<div>
+<h2>برای ادامهٔ مسیر</h2>
+<p>این صفحه مستقل از سرویس خارجی اجرا می‌شود؛ راهنماهای Markdown نیز کنار آن موجودند.</p>
+</div>
+</div>
+<div class="resource-grid">
+<a href="../USER_GUIDE.fa.md" class="resource-card">
+<span aria-hidden="true">↖</span>
+<h3>راهنمای کاربر</h3>
+<p>شروع، نصب و مثال‌های پایه</p>
+<small dir="ltr">USER_GUIDE.fa.md</small>
+</a>
+<a href="../MEDIA.fa.md" class="resource-card">
+<span aria-hidden="true">↖</span>
+<h3>راهنمای رسانه</h3>
+<p>عکس، فیلم، کپشن و تامنیل</p>
+<small dir="ltr">MEDIA.fa.md</small>
+</a>
+<a href="../API_REFERENCE.fa.md" class="resource-card">
+<span aria-hidden="true">↖</span>
+<h3>مرجع API</h3>
+<p>مدل‌ها، ورودی‌ها و خروجی‌ها</p>
+<small dir="ltr">API_REFERENCE.fa.md</small>
+</a>
+<a href="../SESSIONS.fa.md" class="resource-card">
+<span aria-hidden="true">↖</span>
+<h3>راهنمای سشن</h3>
+<p>چند حساب و چرخهٔ عمر</p>
+<small dir="ltr">SESSIONS.fa.md</small>
+</a>
+<a href="../WEB_METHODS.fa.md" class="resource-card">
+<span aria-hidden="true">↖</span>
+<h3>فهرست متدهای وب</h3>
+<p>نام‌ها و فیلدهای مشاهده‌شده</p>
+<small dir="ltr">WEB_METHODS.fa.md</small>
+</a>
+<a href="../CONTRACT_CATALOG.fa.md" class="resource-card">
+<span aria-hidden="true">↖</span>
+<h3>قرارداد کاتالوگ</h3>
+<p>محدودیت‌ها و منشأ قراردادها</p>
+<small dir="ltr">CONTRACT_CATALOG.fa.md</small>
+</a>
+</div>
+<article class="validation" id="validation">
+<div>
+<span class="eyebrow">اعتبارسنجی فعلی</span>
+<h3>۱۱۶ تست محلی، به‌علاوهٔ بررسی حساب واقعی</h3>
+<p>ورود، ارسال متن، فوروارد، عکس و فیلم با و بدون کپشن و عکس بزرگ با تامنیل معتبر روی سرویس بررسی شده‌اند. تمامی نام‌های RPC و رفتار نمایش روی دستگاه گیرنده تأیید نشده‌اند. بازیابی خودکار رویدادهای زمان قطع اتصال نیز پیاده نشده است.</p>
+</div>
+<span class="validation-mark" aria-hidden="true">✓</span>
+</article>
+</section>
+<footer class="page-footer">
+<a class="brand footer-brand" href="#overview">
+<span dir="ltr">FNC <b>Rubika</b>
+</span>
+</a>
+<span>مستندات فارسی · نسخهٔ محلی پروژه</span>
+<a href="#overview">بازگشت به بالا ↑</a>
+</footer>
+</main>
+<aside class="page-toc" aria-label="دسترسی سریع">
+<p>دسترسی سریع</p>
+<a href="#installation">شروع سریع</a>
+<a href="#messages">ارسال و فوروارد</a>
+<a href="#media">رسانه و تامنیل</a>
+<a href="#reference">مرجع کلاینت</a>
+<a href="#catalog">جست‌وجوی RPC</a>
+<a href="#errors">رفع خطا</a>
+<div class="toc-note">
+<span class="tiny-bracket">{ }</span>
+<p>مثال‌ها برای توسعه‌اند؛ GUID و مسیر فایل را با مقادیر خودتان جایگزین کنید.</p>
+</div>
+</aside>
+</div>
+<dialog id="search-dialog" class="search-dialog" aria-labelledby="search-title">
+<div class="dialog-heading">
+<h2 id="search-title">دنبال چه چیزی می‌گردید؟</h2>
+<button type="button" class="icon-button" id="search-close" aria-label="بستن جست‌وجو">×</button>
+</div>
+<label class="search-field">
+<span aria-hidden="true">⌕</span>
+<input id="doc-search" type="search" placeholder="پیام، تامنیل، سشن، send_photo…" autocomplete="off" aria-label="عبارت جست‌وجو" dir="auto">
+</label>
+<div id="search-results" class="search-results" role="status">
+</div>
+<p class="dialog-hint">برای خروج <kbd>Esc</kbd> را بزنید.</p>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite">
+</div>
 </body>
 </html>

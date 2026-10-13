@@ -37,7 +37,7 @@ Client(
 | `session_name` | بله | ۱ تا ۶۴ کاراکتر؛ ابتدا حرف/عدد و سپس فقط حرف، عدد، `_` یا `-`. مانند `personal` یا `business-1`. |
 | `registry` | خیر | catalog از قبل بارگذاری‌شده؛ برای تست یا integration کنترل‌شده. با `contract_path` هم‌زمان ندهید. |
 | `contract_path` | خیر | مسیر JSON catalog بازبینی‌شده. پیش‌فرض catalog همراه بسته است. |
-| `data_dir` | خیر | پوشهٔ ذخیرهٔ encrypted DBها. پیش‌فرض `%LOCALAPPDATA%\fnc-rubika` در ویندوز است. |
+| `data_dir` | خیر | پوشهٔ ذخیرهٔ encrypted DBها. پیش‌فرض پوشهٔ اجرای برنامه است و سشن با نام `<session_name>.rubika` ذخیره می‌شود. |
 | `key_provider` | خیر | provider کلید؛ پیش‌فرض OS keyring است. برای محیط بدون keyring، `PassphraseKeyProvider` تزریق کنید. |
 
 ### چرخهٔ عمر
@@ -88,6 +88,20 @@ result = await client.wait_operation(queued.operation_id, timeout=60)
 | `upload` | `await client.media.upload(path, *, content_type=None, wait=True, timeout=60)` | `MediaRef` یا `QueuedOperation`. `path` باید فایل موجود باشد و تا تحویل outbox حذف یا جابه‌جا نشود. |
 | `download` | `await client.media.download(file_id, destination)` | `MediaRef`. `destination` مسیر نهایی محلی است؛ parent در صورت نیاز ساخته می‌شود. |
 
+
+متدهای مستقیم رسانه روی `Client` و `SyncClient`:
+
+| متد | ورودی و خروجی |
+| --- | --- |
+| `send_photo(chat_id, photo, *, caption=None, reply_to_message_id=None, wait=True, timeout=300)` | مسیر عکس یا MediaRef آماده؛ خروجی Message یا QueuedOperation. |
+| `send_video(chat_id, video, *, caption=None, reply_to_message_id=None, wait=True, timeout=300)` | مسیر فیلم یا MediaRef آماده؛ خروجی Message یا QueuedOperation. |
+| `upload_photo(path, *, timeout=300)` / `upload_video(path, *, timeout=300)` | آپلود با فرادادهٔ رسانه و خروجی MediaRef. |
+
+در عکس، نسخهٔ JPEG با حفظ نسبت تصویر و ابعاد حداکثر ۱۰۰۰×۱۰۰۰ آماده
+می‌شود. تامنیل معتبر حداکثر ۴۰×۴۰ الزامی است؛ نبود یا خرابی آن ارسال را
+متوقف می‌کند. فایل اصلی تغییر نمی‌کند. در `wait=False`، آپلود رسانه ابتدا
+کامل می‌شود و سپس عملیات ارسال پیام برمی‌گردد. جزئیات در [راهنمای رسانه](MEDIA.fa.md).
+
 ### event و handler
 
 | متد | امضا | رفتار |
@@ -134,10 +148,6 @@ SessionPool(
     contract_path: str | Path | None = None,
     data_dir: str | Path | None = None,
     key_provider: KeyProvider | None = None,
-    auto_login: bool = True,
-    authenticator_factory=None,
-    input_func=input,
-    otp_input_func=getpass,
 )
 ```
 
@@ -156,7 +166,7 @@ SessionPool(
 
 | مدل | فیلدها |
 | --- | --- |
-| `Session` | `access_token`, `device_id | None`, `expires_at | None`. نباید چاپ یا log شود. |
+| `Session` | `access_token`, `device_id`, `expires_at`, `private_key`, `api_version`, `account_id` و ویژگی `is_expired`. اعتبارنامه‌ها نباید چاپ یا log شوند. |
 | `Message` | `chat_id`, `message_id`, `text | None`, `reply_to_message_id | None`, `raw`. |
 | `MediaRef` | `file_id`, `name | None`, `content_type | None`, `size | None`, `raw`. |
 | `EventEnvelope` | `event_id`, `type`, `payload`, `cursor | None`, `received_at`. |
@@ -180,11 +190,10 @@ reconnect_max_seconds=30, event_lease_seconds=60)` سطح پایین است. `tr
 `SyncClient(async_client)` برای برنامه‌هایی است که event loop ندارند:
 
 ```python
-from fnc_rubika import SyncClient
+from fnc_rubika import Client
 
-async_client = Client("personal").async_client()
-with SyncClient(async_client) as client:
-    message = client.messages.send("chat-id", "سلام")
+with Client("personal") as client:
+    message = client.send("chat-id", "سلام")
 ```
 
 متدهای sync `messages.send/reply/edit/delete/forward/history` و
@@ -198,7 +207,7 @@ with SyncClient(async_client) as client:
 | خطا | علت / اقدام |
 | --- | --- |
 | `SecurityConfigurationError` | سشن وجود ندارد، keyring در دسترس نیست یا کلید نامعتبر است. |
-| `SessionExpiredError` | login خودکار انجام نمی‌شود؛ یک `Client` جدید با همان نام بسازید و `await client.login_interactive()` را اجرا کنید. |
+| `SessionExpiredError` | سشن رد یا منقضی شده است. با `auto_login=True` ورود تعاملی مجدد انجام می‌شود؛ با `auto_login=False` ورود را جدا مدیریت کنید. |
 | `ContractError` | catalog ناقص، فاقد OTP/WS، یا نامعتبر است. |
 | `UnsupportedOperationError` | operation در catalog بازبینی‌شده وجود ندارد. |
 | `RateLimitError` | سرویس rate limit داده؛ `Retry-After` رعایت می‌شود. سرعت را بالا نبرید. |
