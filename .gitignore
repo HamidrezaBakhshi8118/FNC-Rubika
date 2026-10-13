@@ -18,3 +18,4 @@ private/
 .env
 .env.*
 !*.env.example
+*.vscode

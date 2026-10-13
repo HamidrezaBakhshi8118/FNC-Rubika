@@ -208,6 +208,10 @@ class RubikaTransport:
                   dc_type: str = 'api') -> Mapping[str, Any]:
         if self._closed:
             raise TransportError('Rubika transport is closed')
+        inline = payload.get('file_inline')
+        if method == 'sendMessage' and isinstance(inline, Mapping) and inline.get('type') == 'Image':
+            from .media_metadata import require_photo_thumbnail
+            require_photo_thumbnail(inline.get('thumb_inline'))
         if authenticated and self.session.is_expired:
             raise SessionExpiredError('The stored session has expired')
         if authenticated and not self.session.access_token:

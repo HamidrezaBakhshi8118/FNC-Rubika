@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import mimetypes
+import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Mapping
 
@@ -27,21 +28,37 @@ class MediaService:
         return await self._upload_visual(path, 'Video', timeout=timeout)
 
     async def _upload_visual(self, path: str | Path, kind: str, *, timeout: float | None) -> MediaRef:
-        from .media_metadata import photo_metadata, video_metadata
+        from .media_metadata import prepare_photo, video_metadata
 
         file_path = Path(path).resolve()
         if not file_path.is_file():
             raise FileNotFoundError(file_path)
         if file_path.stat().st_size == 0:
             raise ValueError('Cannot upload an empty file')
-        inspect_media = photo_metadata if kind == 'Image' else video_metadata
-        metadata = await asyncio.to_thread(inspect_media, file_path)
-        content_type = mimetypes.guess_type(file_path.name)[0]
-        uploaded = await self.upload(file_path, content_type=content_type, timeout=timeout)
-        assert isinstance(uploaded, MediaRef)
-        descriptor = {**uploaded.raw, **metadata, 'file_name': file_path.name,
-                      'mime': file_path.suffix.lstrip('.').lower()}
-        return MediaRef.from_dict(descriptor)
+        temporary_dir = None
+        keep_upload_copy = False
+        try:
+            if kind == 'Image':
+                temporary_dir = Path(tempfile.mkdtemp(prefix='fnc-rubika-photo-'))
+                upload_path = temporary_dir / (file_path.stem + '.jpg')
+                metadata = await asyncio.to_thread(prepare_photo, file_path, upload_path)
+            else:
+                upload_path = file_path
+                metadata = await asyncio.to_thread(video_metadata, file_path)
+            content_type = mimetypes.guess_type(upload_path.name)[0]
+            uploaded = await self.upload(upload_path, content_type=content_type, timeout=timeout)
+            assert isinstance(uploaded, MediaRef)
+            descriptor = {**uploaded.raw, **metadata, 'file_name': upload_path.name,
+                          'mime': upload_path.suffix.lstrip('.').lower()}
+            return MediaRef.from_dict(descriptor)
+        except (TimeoutError, asyncio.CancelledError):
+            # A queued upload can still need its copy after the caller stops waiting.
+            keep_upload_copy = True
+            raise
+        finally:
+            if temporary_dir is not None and not keep_upload_copy:
+                upload_path.unlink(missing_ok=True)
+                temporary_dir.rmdir()
 
     async def send_photo(self, chat_id: str, photo: str | Path | MediaRef, *, caption: str | None = None,
                          reply_to_message_id: str | None = None, wait: bool = True,
@@ -77,6 +94,9 @@ class MediaService:
             raise ValueError('Use the matching upload_photo/upload_video result as the media reference')
         if kind == 'Video' and not descriptor.get('time'):
             raise ValueError('The uploaded video reference is missing its duration')
+        if kind == 'Image':
+            from .media_metadata import require_photo_thumbnail
+            await asyncio.to_thread(require_photo_thumbnail, descriptor.get('thumb_inline'))
         fields = (*required, 'type', 'thumb_inline', 'time')
         file_inline = {key: descriptor[key] for key in fields if key in descriptor}
         return await self._client.messages._send_media(chat_id, file_inline, caption=caption,

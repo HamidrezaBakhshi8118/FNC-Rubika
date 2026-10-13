@@ -86,8 +86,13 @@ await client.send_video(chat_id, "video.mp4")
 await client.send_video(chat_id, "video.mp4", caption="Video caption")
 ```
 
-Dimensions, a thumbnail and video duration are read automatically. Use
-`upload_photo()` or `upload_video()` to upload once and reuse the returned
+Dimensions, a thumbnail and video duration are read automatically.
+`send_photo()` prepares a JPEG copy fitting within 1000×1000 pixels and requires
+a valid JPEG preview fitting within 40×40 pixels before sending. The source
+file is preserved. Missing or invalid photo previews also block direct
+`sendMessage` calls carrying an Image descriptor.
+
+Use `upload_photo()` or `upload_video()` to upload once and reuse the returned
 `MediaRef` in multiple sends. The same methods are available in synchronous
 clients. See [the Persian media guide](docs/MEDIA.fa.md) for queue and timeout
 behavior and [the complete example](examples/media_client.py).

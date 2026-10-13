@@ -47,6 +47,9 @@ class MessagesService:
 
     async def _send_media(self, chat_id: str, file_inline: Mapping[str, Any], *, caption: str | None,
                           reply_to_message_id: str | None, wait: bool, timeout: float | None) -> Message | QueuedOperation:
+        if file_inline.get('type') == 'Image':
+            from .media_metadata import require_photo_thumbnail
+            require_photo_thumbnail(file_inline.get('thumb_inline'))
         payload = {'chat_id': normalize_chat_id(chat_id), 'file_inline': dict(file_inline),
                    'text': caption, 'reply_to_message_id': reply_to_message_id}
         result = await self._client._submit('messages.send', payload, wait=wait, timeout=timeout)
