@@ -446,8 +446,11 @@ class Client(RubikaMethods):
         return await self.messages.delete(chat_id, message_id, wait=wait, timeout=timeout)
 
     async def forward(self, from_chat_id: str, message_id: str, to_chat_id: str, *, wait: bool = True, timeout: float | None = 30) -> Message | QueuedOperation:
+        """Forward one message from its source conversation to the destination."""
         await self.start()
         return await self.messages.forward(from_chat_id, message_id, to_chat_id, wait=wait, timeout=timeout)
+
+    forward_message = forward
 
     async def history(self, chat_id: str, *, cursor: str | None = None, limit: int | None = None) -> tuple[Message, ...]:
         await self.start()
@@ -456,6 +459,32 @@ class Client(RubikaMethods):
     async def upload(self, path: str | Path, *, content_type: str | None = None, wait: bool = True, timeout: float | None = 60) -> MediaRef | QueuedOperation:
         await self.start()
         return await self.media.upload(path, content_type=content_type, wait=wait, timeout=timeout)
+
+    async def upload_photo(self, path: str | Path, *, timeout: float | None = 300) -> MediaRef:
+        """Upload a photo once for reuse in send_photo."""
+        await self.start()
+        return await self.media.upload_photo(path, timeout=timeout)
+
+    async def upload_video(self, path: str | Path, *, timeout: float | None = 300) -> MediaRef:
+        """Upload a video once for reuse in send_video."""
+        await self.start()
+        return await self.media.upload_video(path, timeout=timeout)
+
+    async def send_photo(self, chat_id: str, photo: str | Path | MediaRef, *, caption: str | None = None,
+                         reply_to_message_id: str | None = None, wait: bool = True,
+                         timeout: float | None = 300) -> Message | QueuedOperation:
+        """Send a photo with optional caption; accept a path or upload_photo result."""
+        await self.start()
+        return await self.media.send_photo(chat_id, photo, caption=caption, reply_to_message_id=reply_to_message_id,
+                                           wait=wait, timeout=timeout)
+
+    async def send_video(self, chat_id: str, video: str | Path | MediaRef, *, caption: str | None = None,
+                         reply_to_message_id: str | None = None, wait: bool = True,
+                         timeout: float | None = 300) -> Message | QueuedOperation:
+        """Send a video with optional caption; accept a path or upload_video result."""
+        await self.start()
+        return await self.media.send_video(chat_id, video, caption=caption, reply_to_message_id=reply_to_message_id,
+                                           wait=wait, timeout=timeout)
 
     async def download(self, file_id: str | Mapping[str, Any] | MediaRef, destination: str | Path) -> MediaRef:
         await self.start()

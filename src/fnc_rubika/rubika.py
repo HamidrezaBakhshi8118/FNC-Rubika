@@ -370,6 +370,10 @@ class RubikaTransport:
         if size == 0:
             raise ValueError('Cannot upload an empty file')
         metadata = await self.rpc('requestSendFile', {'file_name': path.name, 'size': size, 'mime': path.suffix.lstrip('.')})
+        # The web RPC returns "id"; accept "file_id" from older adapters too.
+        file_id = metadata.get('id') or metadata.get('file_id')
+        if file_id is None or not str(file_id):
+            raise AmbiguousDeliveryError('The upload reservation lacks its file ID')
         url = _trusted_url(str(metadata['upload_url']))
         chunk_size, parts = 131072, math.ceil(size / 131072)
         received_hash = None
@@ -377,7 +381,7 @@ class RubikaTransport:
             for part in range(1, parts+1):
                 chunk = file.read(chunk_size)
                 headers = {'Referer': _WEB_REFERER, 'auth': self.session.access_token, 'access-hash-send': str(metadata['access_hash_send']),
-                           'file-id': str(metadata['file_id']), 'part-number': str(part), 'total-part': str(parts), 'chunk-size': str(len(chunk))}
+                           'file-id': str(file_id), 'part-number': str(part), 'total-part': str(parts), 'chunk-size': str(len(chunk))}
                 try:
                     response = await self._http.post(url, content=chunk, headers=headers)
                 except httpx.HTTPError as exc:
@@ -399,7 +403,7 @@ class RubikaTransport:
                 received_hash = (body.get('data') or {}).get('access_hash_rec') or received_hash
         if not received_hash:
             raise AmbiguousDeliveryError('The upload response lacks its access hash; delivery could not be confirmed')
-        return dict(file_id=str(metadata['file_id']), name=path.name, size=size,
+        return dict(file_id=str(file_id), name=path.name, size=size,
                     content_type=payload.get('content_type'), dc_id=metadata.get('dc_id'), access_hash_rec=received_hash)
 
     async def download(self, file_id: Any, destination: Path) -> Mapping[str, Any]:

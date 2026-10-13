@@ -75,6 +75,23 @@ asyncio.run(main())
 
 `client.messages.send(...)` remains available. Message and media services have
 concrete types, and the package includes `py.typed` for editor completion.
+
+Photos, videos, captions and forwards have readable client methods:
+
+```python
+await client.forward_message(source_chat_id, message_id, destination_chat_id)
+await client.send_photo(chat_id, "photo.jpg")
+await client.send_photo(chat_id, "photo.jpg", caption="Photo caption")
+await client.send_video(chat_id, "video.mp4")
+await client.send_video(chat_id, "video.mp4", caption="Video caption")
+```
+
+Dimensions, a thumbnail and video duration are read automatically. Use
+`upload_photo()` or `upload_video()` to upload once and reuse the returned
+`MediaRef` in multiple sends. The same methods are available in synchronous
+clients. See [the Persian media guide](docs/MEDIA.fa.md) for queue and timeout
+behavior and [the complete example](examples/media_client.py).
+
 `Client` and `SyncClient` expose all 205 catalog RPC names as explicit methods,
 for example `await client.getChats()` or
 `await client.getUserInfo(user_guid="YOUR_USER_GUID")`. Their keyword payloads

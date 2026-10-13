@@ -45,6 +45,13 @@ class MessagesService:
     async def reply(self, chat_id: str, message_id: str, text: str, *, wait: bool = True, timeout: float | None = 30) -> Message | QueuedOperation:
         return await self.send(chat_id, text, reply_to_message_id=message_id, wait=wait, timeout=timeout)
 
+    async def _send_media(self, chat_id: str, file_inline: Mapping[str, Any], *, caption: str | None,
+                          reply_to_message_id: str | None, wait: bool, timeout: float | None) -> Message | QueuedOperation:
+        payload = {'chat_id': normalize_chat_id(chat_id), 'file_inline': dict(file_inline),
+                   'text': caption, 'reply_to_message_id': reply_to_message_id}
+        result = await self._client._submit('messages.send', payload, wait=wait, timeout=timeout)
+        return result if isinstance(result, QueuedOperation) else _unwrap_message(result)
+
     async def edit(self, chat_id: str, message_id: str, text: str, *, wait: bool = True, timeout: float | None = 30) -> Message | QueuedOperation:
         result = await self._client._submit("messages.edit", {"chat_id": normalize_chat_id(chat_id), "message_id": message_id, "text": text}, wait=wait, timeout=timeout)
         return result if isinstance(result, QueuedOperation) else _unwrap_message(result)
