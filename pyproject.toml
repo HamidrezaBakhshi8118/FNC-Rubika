@@ -7,7 +7,7 @@ name = "fnc-rubika"
 version = "0.2.6"
 description = "Private, resilient, session-based Rubika client foundation"
 readme = "README.md"
-requires-python = ">=3.11,<3.15"
+requires-python = ">=3.11,<3.16"
 license = { text = "Proprietary" }
 authors = [{ name = "FNC" }]
 dependencies = [
