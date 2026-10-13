@@ -34,6 +34,9 @@ from .exceptions import (AccessDeniedError, AmbiguousDeliveryError, ContractErro
 from .models import Session
 
 
+_WEB_REFERER = 'https://web.rubika.ir/'
+
+
 def transform_auth(value: str) -> str:
     result = []
     for char in value:
@@ -132,7 +135,8 @@ class RubikaTransport:
     async def _post(self, url: str, body: Mapping[str, Any], *, plain: bool = False) -> Mapping[str, Any]:
         try:
             response = await self._http.post(_trusted_url(url), content=json.dumps(dict(body), separators=(',', ':')),
-                                             headers={'Content-Type': 'application/json' if plain else 'text/plain'})
+                                             headers={'Content-Type': 'application/json' if plain else 'text/plain',
+                                                      'Referer': _WEB_REFERER})
         except (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout) as exc:
             raise TransportError('Could not connect to Rubika') from exc
         except httpx.HTTPError as exc:
@@ -372,7 +376,7 @@ class RubikaTransport:
         with path.open('rb') as file:
             for part in range(1, parts+1):
                 chunk = file.read(chunk_size)
-                headers = {'auth': self.session.access_token, 'access-hash-send': str(metadata['access_hash_send']),
+                headers = {'Referer': _WEB_REFERER, 'auth': self.session.access_token, 'access-hash-send': str(metadata['access_hash_send']),
                            'file-id': str(metadata['file_id']), 'part-number': str(part), 'total-part': str(parts), 'chunk-size': str(len(chunk))}
                 try:
                     response = await self._http.post(url, content=chunk, headers=headers)
@@ -406,7 +410,7 @@ class RubikaTransport:
             raise ContractError('Rubika download needs file_id, access_hash_rec, dc_id and size (or a MediaRef)')
         dcs = await self.discover()
         url = _trusted_url(str((dcs.get('storages') or {}).get(str(descriptor['dc_id']), '')))
-        headers = {'auth': self.session.access_token, 'access-hash-rec': str(descriptor['access_hash_rec']),
+        headers = {'Referer': _WEB_REFERER, 'auth': self.session.access_token, 'access-hash-rec': str(descriptor['access_hash_rec']),
                    'file-id': str(descriptor['file_id']), 'start-index': '0', 'last-index': str(descriptor['size']), 'Content-Type': 'text/plain'}
         try:
             async with self._http.stream('POST', url, headers=headers) as response:
