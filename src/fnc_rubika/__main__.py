@@ -5,6 +5,7 @@ import argparse
 import asyncio
 from importlib.metadata import PackageNotFoundError, version
 import json
+from pathlib import Path
 import sys
 
 from .auth import Client, default_catalog_path
@@ -17,10 +18,17 @@ def main() -> int:
     sub = parser.add_subparsers(dest='command', required=True)
     login = sub.add_parser('login', help='Sign in through the terminal and save an encrypted session')
     login.add_argument('session_name', nargs='?', default='personal')
+    login.add_argument('--data-dir')
     diagnose = sub.add_parser('diagnose', help='Check stored session and destination access using read APIs')
     diagnose.add_argument('session_name', nargs='?', default='personal')
+    diagnose.add_argument('--data-dir')
     diagnose.add_argument('--chat-id', help='Destination GUID or Rubika web conversation URL')
     sub.add_parser('methods', help='List methods from the bundled public web catalog')
+    export = sub.add_parser('export-session', help='Export a portable encrypted session without network access')
+    export.add_argument('session_name')
+    export.add_argument('destination')
+    export.add_argument('--data-dir')
+    export.add_argument('--from-keyring', action='store_true', help='Read a legacy source using its original OS-keyring key')
     args = parser.parse_args()
     if args.command == 'methods':
         for operation in ContractRegistry.from_file(default_catalog_path()).operations():
@@ -28,12 +36,12 @@ def main() -> int:
         return 0
 
     async def sign_in():
-        async with Client(args.session_name):
+        async with Client(args.session_name, data_dir=args.data_dir):
             print('Session is ready. Credentials are stored encrypted.')
 
     async def run_diagnostics():
         from .diagnostics import diagnose_access
-        client = Client(args.session_name, auto_login=False)
+        client = Client(args.session_name, data_dir=args.data_dir, auto_login=False)
         try:
             if not client.has_session():
                 report = {'assessment': 'session_missing'}
@@ -55,6 +63,26 @@ def main() -> int:
         finally:
             await client.aclose()
     try:
+        if args.command == 'export-session':
+            from .auth import _SESSION_NAME
+            from .exceptions import SecurityConfigurationError
+            from .storage import EncryptedSQLiteStore, KeyringKeyProvider
+            from .session_keys import DefaultSessionKeyProvider
+            name = args.session_name.removesuffix('.rubika')
+            if not _SESSION_NAME.fullmatch(name):
+                raise ValueError('Invalid source session name')
+            path = Path(args.data_dir or Path.cwd()) / f'{name}.rubika'
+            store = EncryptedSQLiteStore.open_readonly(
+                path, key_provider=KeyringKeyProvider(create=False) if args.from_keyring else DefaultSessionKeyProvider(),
+            )
+            try:
+                if not store.load_secret('session'):
+                    raise SecurityConfigurationError('Source session has no saved authentication material')
+                path = store.export_portable(args.destination)
+                print(f'Portable encrypted session exported to {path}. No network workers were started.')
+            finally:
+                store.close()
+            return 0
         asyncio.run(run_diagnostics() if args.command == 'diagnose' else sign_in())
     except (KeyboardInterrupt, EOFError):
         print('Login cancelled.', file=sys.stderr)
@@ -64,6 +92,9 @@ def main() -> int:
         return 1
     except ValueError:
         print('Invalid input. Check the session name and destination GUID or Rubika conversation URL.', file=sys.stderr)
+        return 1
+    except OSError:
+        print('Unable to access the session file or export destination; no existing export was overwritten.', file=sys.stderr)
         return 1
     return 0
 

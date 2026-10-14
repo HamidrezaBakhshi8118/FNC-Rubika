@@ -5,6 +5,7 @@ from .exceptions import AccessDeniedError, SessionRenewalError
 from .auth import Client, ContractOtpAuthenticator, validate_iranian_phone
 from .models import Delivery, EventEnvelope, MediaRef, Message, Session
 from .storage import EncryptedSQLiteStore, KeyringKeyProvider, PassphraseKeyProvider
+from .session_keys import PortableKeyProvider
 from .sync import SyncClient
 from .sessions import SessionPool
 from .rubika import RubikaOtpAuthenticator, RubikaTransport
@@ -22,6 +23,7 @@ __all__ = [
     "MediaRef",
     "Message",
     "PassphraseKeyProvider",
+    "PortableKeyProvider",
     "Session",
     "SessionPool",
     "SyncClient",

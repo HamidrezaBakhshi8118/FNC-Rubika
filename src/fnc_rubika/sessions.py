@@ -27,6 +27,7 @@ class SessionPool:
         contract_path: str | Path | None = None,
         data_dir: str | Path | None = None,
         key_provider: KeyProvider | None = None,
+        session_password: str | None = None,
     ) -> None:
         if not session_names:
             raise ValueError("SessionPool requires at least one session name")
@@ -39,6 +40,7 @@ class SessionPool:
                 contract_path=contract_path,
                 data_dir=data_dir,
                 key_provider=key_provider,
+                session_password=session_password,
             )
             for name in session_names
         }

@@ -21,7 +21,8 @@ from .media import MediaService
 from .api import CatalogApi
 from .methods import RubikaMethods
 from .exceptions import AccessDeniedError, SessionRenewalError
-from .storage import EncryptedSQLiteStore, KeyProvider, KeyringKeyProvider
+from .storage import EncryptedSQLiteStore, KeyProvider
+from .session_keys import DefaultSessionKeyProvider
 from .terminal import info as terminal_info
 from .terminal import prompt_label, success as terminal_success
 from .transport import HttpWebSocketTransport
@@ -125,11 +126,14 @@ class Client(RubikaMethods):
         contract_path: str | Path | None = None,
         data_dir: str | Path | None = None,
         key_provider: KeyProvider | None = None,
+        session_password: str | None = None,
         auto_login: bool = True,
         authenticator_factory: Callable[[], OtpAuthenticator] | None = None,
         input_func: Callable[[str], str] = input,
         otp_input_func: Callable[[str], str] = getpass,
     ) -> None:
+        if key_provider is not None and session_password is not None:
+            raise ValueError("Use either key_provider or session_password, not both")
         session_name = session_name.removesuffix('.rubika')
         if not _SESSION_NAME.fullmatch(session_name):
             raise ValueError("Session name must contain 1-64 letters, numbers, '_' or '-' and begin with a letter or number")
@@ -139,7 +143,9 @@ class Client(RubikaMethods):
         self.registry = registry or ContractRegistry.from_file(contract_path or default_catalog_path())
         self.store = EncryptedSQLiteStore(
             self.data_dir / f"{session_name}.rubika",
-            key_provider=key_provider or KeyringKeyProvider(),
+            key_provider=key_provider if key_provider is not None else DefaultSessionKeyProvider(
+                session_password, interactive=auto_login,
+            ),
         )
         self._client: AsyncClient | None = None
         self._closed = False
@@ -156,6 +162,12 @@ class Client(RubikaMethods):
     def session_path(self) -> Path:
         """Path of this client's encrypted .rubika session store."""
         return self.store.path
+
+    def export_session(self, destination: str | Path, *, session_password: str | None = None) -> Path:
+        """Create a portable encrypted copy before starting network workers."""
+        if self._client is not None and self._client._started:
+            raise RuntimeError("Export the session before starting the client workers")
+        return self.store.export_portable(destination, session_password=session_password)
 
     async def _call_operation(self, operation: str, payload: Mapping[str, Any], *, wait: bool = True, timeout: float | None = 30) -> Mapping[str, Any] | QueuedOperation:
         await self.start()

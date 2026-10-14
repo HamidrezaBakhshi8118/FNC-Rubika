@@ -65,9 +65,10 @@ def test_diagnostic_cli_does_not_start_workers_or_change_session(monkeypatch, ca
     low = LowLevel()
     low.transport = transport
     class Named:
-        def __init__(self, name, *, auto_login):
+        def __init__(self, name, *, auto_login, data_dir=None):
             assert name == 'personal'
             assert auto_login is False
+            assert data_dir is None
         def has_session(self):
             return True
         def async_client(self):

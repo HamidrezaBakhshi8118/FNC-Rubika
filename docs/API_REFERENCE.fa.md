@@ -38,7 +38,8 @@ Client(
 | `registry` | خیر | catalog از قبل بارگذاری‌شده؛ برای تست یا integration کنترل‌شده. با `contract_path` هم‌زمان ندهید. |
 | `contract_path` | خیر | مسیر JSON catalog بازبینی‌شده. پیش‌فرض catalog همراه بسته است. |
 | `data_dir` | خیر | پوشهٔ ذخیرهٔ encrypted DBها. پیش‌فرض پوشهٔ اجرای برنامه است و سشن با نام `<session_name>.rubika` ذخیره می‌شود. |
-| `key_provider` | خیر | provider کلید؛ پیش‌فرض OS keyring است. برای محیط بدون keyring، `PassphraseKeyProvider` تزریق کنید. |
+| `key_provider` | خیر | provider سفارشی؛ در صورت تعیین، همراه `session_password` قابل استفاده نیست. |
+| `session_password` | خیر | رمز سشن قابل‌انتقال؛ پیش‌فرض از `FNC_RUBIKA_SESSION_PASSWORD` یا ورودی مخفی ترمینال گرفته می‌شود. سشن‌های جدید به keyring نیاز ندارند. |
 
 ### چرخهٔ عمر
 
@@ -49,6 +50,7 @@ Client(
 | `aclose` | `await client.aclose()` | receiver، outbox، HTTP و store را می‌بندد؛ idempotent است. کلاینت بسته restart نمی‌شود. |
 | `has_session` | `client.has_session()` | `bool`؛ تنها وجود سشن ذخیره‌شده را می‌سنجد، اعتبار آن در سرویس را نه. |
 | `session_name` | `client.session_name` | نام محلی immutable سشن. |
+| `export_session` | `client.export_session(destination, *, session_password=None)` | پیش از شروع workerها یک کپی رمزگذاری‌شده و قابل‌انتقال می‌سازد؛ فایل مبدأ یا مقصد موجود را بازنویسی نمی‌کند. |
 | `session_expired` | `client.session_expired` | اگر provider سشن را رد کرده باشد `True` می‌شود؛ در auto_login پیش‌فرض ورود مجدد ترمینالی انجام می‌شود. |
 | `async_client` | `client.async_client()` | `AsyncClient` داخلی برای integration پیشرفته؛ در کد عادی به‌جای آن از خود `client` استفاده کنید. |
 

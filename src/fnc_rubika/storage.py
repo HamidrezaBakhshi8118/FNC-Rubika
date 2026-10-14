@@ -7,10 +7,12 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 import hashlib
 import json
+import os
 from pathlib import Path
 import secrets
 import sqlite3
 import threading
+import tempfile
 from typing import Any, Iterator, Mapping, Protocol
 from uuid import uuid4
 
@@ -60,24 +62,30 @@ class PassphraseKeyProvider:
 class KeyringKeyProvider:
     """Gets a per-store key from the operating-system keyring when available."""
 
-    def __init__(self, service_name: str = "fnc-rubika") -> None:
+    def __init__(self, service_name: str = "fnc-rubika", *, create: bool = True) -> None:
         self._service_name = service_name
+        self._create = create
 
     def get_key(self, store_path: Path) -> bytes:
         try:
             import keyring  # type: ignore[import-not-found]
         except ImportError as exc:
             raise SecurityConfigurationError(
-                "OS keyring support is unavailable; configure PassphraseKeyProvider instead"
+                "OS keyring support is unavailable; install fnc-rubika[keyring] for legacy sessions "
+                "or use a new portable session"
             ) from exc
         account = hashlib.sha256(str(store_path.resolve()).encode("utf-8")).hexdigest()
         try:
             encoded = keyring.get_password(self._service_name, account)
             if encoded is None:
+                if not self._create:
+                    raise SecurityConfigurationError("The original OS-keyring key is unavailable")
                 key = secrets.token_bytes(32)
                 keyring.set_password(self._service_name, account, base64.urlsafe_b64encode(key).decode("ascii"))
                 return key
             key = base64.urlsafe_b64decode(encoded.encode("ascii"))
+        except SecurityConfigurationError:
+            raise
         except Exception as exc:  # Keyring backends have non-uniform exception classes.
             raise SecurityConfigurationError("Unable to access the operating-system keyring") from exc
         if len(key) != 32:
@@ -114,9 +122,85 @@ class EncryptedSQLiteStore:
     def from_passphrase(cls, path: str | Path, passphrase: str) -> "EncryptedSQLiteStore":
         return cls(path, key_provider=PassphraseKeyProvider(passphrase))
 
+    @classmethod
+    def open_readonly(cls, path: str | Path, *, key_provider: KeyProvider) -> "EncryptedSQLiteStore":
+        """Read/export an existing store without schema changes or outbox recovery."""
+        from .session_keys import inspect_store
+        path = Path(path).resolve()
+        if not path.is_file():
+            raise FileNotFoundError("Source session file does not exist")
+        metadata, legacy = inspect_store(path)
+        if metadata is None and not legacy:
+            raise SecurityConfigurationError("Source session has no encrypted records to export")
+        store = object.__new__(cls)
+        store.path = path
+        store._key = key_provider.get_key(path)
+        if len(store._key) != 32:
+            raise SecurityConfigurationError("A session-store key must be 32 bytes")
+        store._lock = threading.RLock()
+        store._connection = sqlite3.connect(path.as_uri() + "?mode=ro", uri=True, check_same_thread=False)
+        store._connection.row_factory = sqlite3.Row
+        return store
+
     def close(self) -> None:
         with self._lock:
             self._connection.close()
+
+    def export_portable(self, destination: str | Path, *, session_password: str | None = None) -> Path:
+        """Export an encrypted copy with a portable password; never overwrite a file.
+
+        Call only while this store has a single owner and no running workers.
+        The original database and original key are not modified.
+        """
+        from .session_keys import make_material, session_password as resolve_password, write_material
+
+        target = Path(destination).resolve()
+        if target == self.path.resolve() or target.exists():
+            raise FileExistsError("Choose a new destination for the portable session export")
+        password = resolve_password(session_password, confirm=True)
+        key, metadata = make_material(password)
+        new_cipher = object.__new__(EncryptedSQLiteStore)
+        new_cipher._key = key
+        target.parent.mkdir(parents=True, exist_ok=True)
+        fd, name = tempfile.mkstemp(prefix=".rubika-export-", dir=target.parent)
+        os.close(fd)
+        temporary = Path(name)
+        copy = sqlite3.connect(temporary)
+        copy.row_factory = sqlite3.Row
+        try:
+            with self._lock:
+                self._connection.backup(copy)
+            with copy:
+                for table, primary, column, aad in (
+                    ("secrets", "name", "value", "secret:{id}"),
+                    ("cursors", "name", "value", "cursor:{id}"),
+                    ("inbox", "event_id", "event", "event:{id}"),
+                    ("outbox", "operation_id", "payload", "outbox:{id}:payload"),
+                    ("outbox", "operation_id", "result", "outbox:{id}:result"),
+                    ("outbox", "operation_id", "last_error", "outbox:{id}:error"),
+                ):
+                    rows = copy.execute(f'SELECT "{primary}", "{column}" FROM "{table}"').fetchall()
+                    for row in rows:
+                        if row[column] is None:
+                            continue
+                        associated = aad.format(id=row[primary])
+                        value = self._open(row[column], aad=associated)
+                        encrypted = new_cipher._seal(value, aad=associated)
+                        copy.execute(f'UPDATE "{table}" SET "{column}"=? WHERE "{primary}"=?',
+                                     (encrypted, row[primary]))
+                write_material(copy, metadata)
+            # Consolidate WAL so a single exported file is sufficient.
+            copy.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+            copy.execute("PRAGMA journal_mode=DELETE")
+            copy.close()
+            # Atomic no-clobber publication on Linux and Windows/NTFS.
+            os.link(temporary, target)
+            return target
+        finally:
+            copy.close()
+            temporary.unlink(missing_ok=True)
+            for suffix in ("-wal", "-shm", "-journal"):
+                temporary.with_name(temporary.name + suffix).unlink(missing_ok=True)
 
     def _create_schema(self) -> None:
         self._connection.executescript(
