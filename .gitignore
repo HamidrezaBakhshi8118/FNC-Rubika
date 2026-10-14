@@ -12,6 +12,11 @@ venv/
 *.rubika-shm
 *.rubika-journal
 *.rubika.salt
+*.rubika.key
+*.sqlite3.key
+*.db.key
+.rubika-export-*
+.rubika-key-*
 *.db
 *.db.salt
 private/

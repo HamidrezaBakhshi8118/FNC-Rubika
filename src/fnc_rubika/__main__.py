@@ -79,7 +79,7 @@ def main() -> int:
                 if not store.load_secret('session'):
                     raise SecurityConfigurationError('Source session has no saved authentication material')
                 path = store.export_portable(args.destination)
-                print(f'Portable encrypted session exported to {path}. No network workers were started.')
+                print(f'Encrypted session exported to {path}. Copy its .key file with it. No network workers were started.')
             finally:
                 store.close()
             return 0

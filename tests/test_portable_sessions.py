@@ -32,7 +32,7 @@ def close(client):
     asyncio.run(client.aclose())
 
 
-def test_default_password_environment_bypasses_even_missing_keyring(tmp_path, monkeypatch):
+def test_explicit_password_provider_bypasses_even_missing_keyring(tmp_path, monkeypatch):
     monkeypatch.setenv(SESSION_PASSWORD_ENV, PASSWORD)
     original_import = builtins.__import__
     def no_keyring(name, *args, **kwargs):
@@ -40,7 +40,8 @@ def test_default_password_environment_bypasses_even_missing_keyring(tmp_path, mo
             raise AssertionError('keyring import attempted')
         return original_import(name, *args, **kwargs)
     monkeypatch.setattr(builtins, '__import__', no_keyring)
-    client = Client('headless', data_dir=tmp_path, auto_login=False)
+    client = Client('headless', data_dir=tmp_path, auto_login=False,
+                    key_provider=PortableKeyProvider(interactive=False))
     try:
         client.store.save_secret('session', {'access_token': 'private-test-token'})
         assert client.has_session()
@@ -89,7 +90,7 @@ def test_wrong_password_and_missing_password_never_change_existing_database(tmp_
 def test_headless_without_password_fails_before_creating_database(tmp_path, monkeypatch):
     monkeypatch.setattr(sys, 'stdin', SimpleNamespace(isatty=lambda: False))
     with pytest.raises(SecurityConfigurationError, match=SESSION_PASSWORD_ENV):
-        Client('new', data_dir=tmp_path)
+        Client('new', data_dir=tmp_path, key_provider=PortableKeyProvider())
     assert not (tmp_path / 'new.rubika').exists()
 
 
@@ -101,10 +102,10 @@ def test_hidden_interactive_password_is_confirmed_only_for_new_session(tmp_path,
         prompts.append(prompt)
         return PASSWORD
     monkeypatch.setattr(keys.getpass, 'getpass', read)
-    first = Client('test', data_dir=tmp_path)
+    first = Client('test', data_dir=tmp_path, key_provider=PortableKeyProvider())
     close(first)
     assert len(prompts) == 2
-    second = Client('test', data_dir=tmp_path)
+    second = Client('test', data_dir=tmp_path, key_provider=PortableKeyProvider())
     close(second)
     assert len(prompts) == 3
 

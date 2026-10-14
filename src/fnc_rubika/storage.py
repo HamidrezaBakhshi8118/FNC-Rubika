@@ -147,24 +147,34 @@ class EncryptedSQLiteStore:
             self._connection.close()
 
     def export_portable(self, destination: str | Path, *, session_password: str | None = None) -> Path:
-        """Export an encrypted copy with a portable password; never overwrite a file.
+        """Export an encrypted copy and a sibling key file, without password prompts.
 
         Call only while this store has a single owner and no running workers.
         The original database and original key are not modified.
+        An explicit session_password opts into the password-protected format.
         """
-        from .session_keys import make_material, session_password as resolve_password, write_material
+        from .session_keys import (file_material, make_material, session_key_path,
+                                   session_password as resolve_password, write_material)
 
         target = Path(destination).resolve()
-        if target == self.path.resolve() or target.exists():
+        target_key = session_key_path(target)
+        if target == self.path.resolve() or target.exists() or target_key.exists():
             raise FileExistsError("Choose a new destination for the portable session export")
-        password = resolve_password(session_password, confirm=True)
-        key, metadata = make_material(password)
+        automatic_key = session_password is None
+        if automatic_key:
+            key = secrets.token_bytes(32)
+            metadata = file_material(key)
+        else:
+            password = resolve_password(session_password, interactive=False)
+            key, metadata = make_material(password)
         new_cipher = object.__new__(EncryptedSQLiteStore)
         new_cipher._key = key
         target.parent.mkdir(parents=True, exist_ok=True)
         fd, name = tempfile.mkstemp(prefix=".rubika-export-", dir=target.parent)
         os.close(fd)
         temporary = Path(name)
+        temporary_key = None
+        published_key = False
         copy = sqlite3.connect(temporary)
         copy.row_factory = sqlite3.Row
         try:
@@ -193,12 +203,31 @@ class EncryptedSQLiteStore:
             copy.execute("PRAGMA wal_checkpoint(TRUNCATE)")
             copy.execute("PRAGMA journal_mode=DELETE")
             copy.close()
+            if automatic_key:
+                key_fd, key_name = tempfile.mkstemp(prefix=".rubika-key-", dir=target.parent)
+                temporary_key = Path(key_name)
+                with os.fdopen(key_fd, "wb") as output:
+                    output.write(key)
+                    output.flush()
+                    os.fsync(output.fileno())
+                os.link(temporary_key, target_key)
+                published_key = True
             # Atomic no-clobber publication on Linux and Windows/NTFS.
             os.link(temporary, target)
             return target
+        except BaseException:
+            if published_key and temporary_key is not None:
+                try:
+                    if os.path.samefile(temporary_key, target_key):
+                        target_key.unlink()
+                except FileNotFoundError:
+                    pass
+            raise
         finally:
             copy.close()
             temporary.unlink(missing_ok=True)
+            if temporary_key is not None:
+                temporary_key.unlink(missing_ok=True)
             for suffix in ("-wal", "-shm", "-journal"):
                 temporary.with_name(temporary.name + suffix).unlink(missing_ok=True)
 

@@ -164,7 +164,7 @@ class Client(RubikaMethods):
         return self.store.path
 
     def export_session(self, destination: str | Path, *, session_password: str | None = None) -> Path:
-        """Create a portable encrypted copy before starting network workers."""
+        """Export a database and automatic key before starting network workers."""
         if self._client is not None and self._client._started:
             raise RuntimeError("Export the session before starting the client workers")
         return self.store.export_portable(destination, session_password=session_password)

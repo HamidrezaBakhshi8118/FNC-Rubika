@@ -1,4 +1,4 @@
-"""Password-protected session keys that do not depend on an OS credential store."""
+"""Automatic file keys and optional password keys, independent of OS keyrings."""
 from __future__ import annotations
 
 import base64
@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import secrets
 import sqlite3
+import stat
 import sys
 import warnings
 
@@ -20,6 +21,73 @@ from .storage import KeyringKeyProvider, PassphraseKeyProvider
 SESSION_PASSWORD_ENV = "FNC_RUBIKA_SESSION_PASSWORD"
 _CHECK = b"fnc-rubika portable session key v1"
 _PARAMETERS = {"version": 1, "kdf": "scrypt", "n": 32768, "r": 8, "p": 1}
+_FILE_CHECK = b"fnc-rubika automatic file key v1"
+
+
+def session_key_path(path: Path) -> Path:
+    return path.with_suffix(path.suffix + ".key")
+
+
+def file_material(key: bytes):
+    cipher = AES.new(key, AES.MODE_GCM, nonce=secrets.token_bytes(12))
+    cipher.update(_FILE_CHECK)
+    ciphertext, tag = cipher.encrypt_and_digest(_FILE_CHECK)
+    return {"version": 1, "kdf": "file", "check":
+            base64.b64encode(cipher.nonce + tag + ciphertext).decode("ascii")}
+
+
+def unlock_file_material(key: bytes, metadata) -> bytes:
+    try:
+        if not isinstance(metadata, dict) or metadata.get("version") != 1 or metadata.get("kdf") != "file":
+            raise ValueError("unsupported file-key metadata")
+        check = base64.b64decode(metadata["check"], validate=True)
+        if len(check) != 28 + len(_FILE_CHECK):
+            raise ValueError("invalid file-key check")
+        cipher = AES.new(key, AES.MODE_GCM, nonce=check[:12])
+        cipher.update(_FILE_CHECK)
+        if cipher.decrypt_and_verify(check[28:], check[12:28]) != _FILE_CHECK:
+            raise ValueError("invalid file key")
+        return key
+    except (KeyError, TypeError, ValueError) as exc:
+        raise SecurityConfigurationError(
+            "The session key file does not match this database or metadata is damaged; "
+            "restore the matching .rubika.key file. Existing data was not changed."
+        ) from exc
+
+
+def _read_file_key(path: Path) -> bytes:
+    try:
+        if not stat.S_ISREG(path.lstat().st_mode):
+            raise SecurityConfigurationError("Session key must be a regular file, not a symlink")
+        descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+        with os.fdopen(descriptor, "rb") as source:
+            if not stat.S_ISREG(os.fstat(source.fileno()).st_mode):
+                raise SecurityConfigurationError("Session key must be a regular file")
+            key = source.read(33)
+    except FileNotFoundError as exc:
+        raise SecurityConfigurationError(
+            "Session key file is missing; restore the matching .rubika.key file. "
+            "An existing session key is never regenerated."
+        ) from exc
+    except OSError as exc:
+        raise SecurityConfigurationError("Unable to read the session key file") from exc
+    if len(key) != 32:
+        raise SecurityConfigurationError("Session key file is invalid; restore its original 32-byte key")
+    return key
+
+
+def _create_file_key(path: Path) -> bytes:
+    key = secrets.token_bytes(32)
+    try:
+        descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL |
+                             getattr(os, "O_NOFOLLOW", 0), 0o600)
+    except FileExistsError:
+        return _read_file_key(path)
+    with os.fdopen(descriptor, "wb") as output:
+        output.write(key)
+        output.flush()
+        os.fsync(output.fileno())
+    return key
 
 
 def session_password(password: str | None = None, *, confirm: bool = False,
@@ -109,6 +177,52 @@ def write_material(connection, metadata):
     )
 
 
+def _create_metadata(store_path: Path, metadata):
+    store_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        descriptor = os.open(store_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    except FileExistsError:
+        pass
+    else:
+        os.close(descriptor)
+    connection = sqlite3.connect(store_path)
+    try:
+        connection.execute("BEGIN IMMEDIATE")
+        current, legacy = inspect_store(store_path)
+        if current is not None or legacy:
+            raise SecurityConfigurationError("Session changed during creation; reopen it")
+        write_material(connection, metadata)
+        connection.commit()
+    except BaseException:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+
+class FileKeyProvider:
+    """Create a random 256-bit sibling key automatically, with no user prompts.
+
+    Copy the closed database AND its .key file when moving to another system.
+    Anyone who can read both files can decrypt the session.
+    """
+
+    def get_key(self, store_path: Path) -> bytes:
+        store_path = Path(store_path)
+        metadata, legacy = inspect_store(store_path)
+        key_path = session_key_path(store_path)
+        if metadata is not None:
+            if not isinstance(metadata, dict) or metadata.get("kdf") != "file":
+                raise SecurityConfigurationError("This session uses another key provider; export it to the automatic format")
+            return unlock_file_material(_read_file_key(key_path), metadata)
+        if legacy:
+            raise SecurityConfigurationError("Open this legacy session with its original key provider and export it first")
+        store_path.parent.mkdir(parents=True, exist_ok=True)
+        key = _create_file_key(key_path)
+        _create_metadata(store_path, file_material(key))
+        return key
+
+
 class PortableKeyProvider:
     """Derive AES keys from a password and non-secret metadata inside the database."""
 
@@ -128,32 +242,12 @@ class PortableKeyProvider:
         if metadata is not None:
             return unlock_material(password, metadata)
         key, metadata = make_material(password)
-        store_path.parent.mkdir(parents=True, exist_ok=True)
-        try:
-            descriptor = os.open(store_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-        except FileExistsError:
-            pass
-        else:
-            os.close(descriptor)
-        connection = sqlite3.connect(store_path)
-        try:
-            connection.execute("BEGIN IMMEDIATE")
-            # Detect another creator instead of overwriting its encryption key.
-            current, legacy = inspect_store(store_path)
-            if current is not None or legacy:
-                raise SecurityConfigurationError("Session changed during creation; reopen it")
-            write_material(connection, metadata)
-            connection.commit()
-        except BaseException:
-            connection.rollback()
-            raise
-        finally:
-            connection.close()
+        _create_metadata(store_path, metadata)
         return key
 
 
 class DefaultSessionKeyProvider:
-    """Portable for new files; preserve access to existing explicit/OS-keyring files."""
+    """Automatic file keys by default. Never request an encryption password."""
 
     def __init__(self, password: str | None = None, *, interactive: bool = True):
         self.password = password
@@ -161,10 +255,16 @@ class DefaultSessionKeyProvider:
 
     def get_key(self, store_path: Path) -> bytes:
         metadata, legacy = inspect_store(store_path)
-        if metadata is not None or not legacy:
-            return PortableKeyProvider(self.password, interactive=self.interactive).get_key(store_path)
+        if metadata is not None:
+            if isinstance(metadata, dict) and metadata.get("kdf") == "file":
+                return FileKeyProvider().get_key(store_path)
+            return PortableKeyProvider(self.password, interactive=False).get_key(store_path)
+        if not legacy:
+            if self.password is not None:
+                return PortableKeyProvider(self.password, interactive=False).get_key(store_path)
+            return FileKeyProvider().get_key(store_path)
         if store_path.with_suffix(store_path.suffix + ".salt").exists():
-            password = session_password(self.password, interactive=self.interactive)
+            password = session_password(self.password, interactive=False)
             return PassphraseKeyProvider(password).get_key(store_path)
         try:
             return KeyringKeyProvider(create=False).get_key(store_path)

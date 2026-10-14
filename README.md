@@ -22,15 +22,23 @@ prompts for the phone number and OTP when the named session does not exist.
 `Client("personal.rubika")` opens the same file. Use `data_dir="sessions"` to
 choose a different directory, and `client.session_path` to inspect the path.
 The file contains encrypted SQLite state, including the session, inbox and
-outbox. Starting with 0.2.7, new sessions use a password-derived key (scrypt)
-and AES-256-GCM, with non-secret salt and key verification metadata inside the
-same database. New sessions do not require an OS keyring. Set
-`FNC_RUBIKA_SESSION_PASSWORD` for unattended Linux/PM2 runs, pass
-`session_password=` to `Client`, or enter the password using the hidden terminal
-prompt. Use a strong password of at least 12 characters. It is not stored.
-After stopping the process, copy the closed `.rubika` file to another system
-and open it with the same password; no path, user or OS binding is used.
+outbox. Starting with 0.2.8, new sessions use AES-256-GCM with a randomly
+generated 256-bit key in a sibling `personal.rubika.key` file. No encryption
+password, environment variable or OS keyring is required. Normal account login
+asks for the phone number and OTP (plus Rubika's own two-step password only if
+the account requires it). Reopening an existing session needs no input.
+After stopping the process, copy BOTH the closed `.rubika` file and its matching
+`.rubika.key` file to another system. No path, user or OS binding is used.
+The key is outside the database, but anyone who can read both files can decrypt
+the session. New key files use owner-only permissions on Linux; protect both
+files and exclude the key from version control.
 Do not copy an active SQLite database while its WAL still contains changes.
+
+Explicit `session_password=` / `PortableKeyProvider` remain available as opt-in
+password protection. They are not used for new sessions merely because the old
+`FNC_RUBIKA_SESSION_PASSWORD` variable is still set. Existing 0.2.7 password
+sessions need their original password via the environment or an explicit
+argument; the default provider never prompts for an encryption password.
 
 Existing OS-keyring sessions keep working on their original system. To move one,
 install the optional `keyring` extra and export an encrypted portable copy there:
@@ -39,11 +47,11 @@ install the optional `keyring` extra and export an encrypted portable copy there
 python -m fnc_rubika export-session personal portable/personal.rubika --from-keyring
 ```
 
-The command obtains the export password from the same environment variable or
-a hidden prompt. It performs no network requests and never overwrites the source
-or an existing destination. Copy the exported file, then set the same password on
-the server. Existing explicit `PassphraseKeyProvider` sessions still use their
-`.salt` sidecar; export them too if a single-file session is required.
+The command creates a new database and `.key` file automatically. It performs no
+network requests and never overwrites the source or an existing destination/key.
+Copy both exported files to the server. Existing explicit `PassphraseKeyProvider`
+sessions still use their `.salt` sidecar and original password; export them to
+switch to the automatic format.
 
 Version 0.2.5 no longer
 automatically opens the earlier `%LOCALAPPDATA%/fnc-rubika/*.sqlite3` stores;
